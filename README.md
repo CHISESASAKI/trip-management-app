@@ -1,69 +1,59 @@
-# React + TypeScript + Vite
+# 🗺️ 一人旅管理アプリ
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+地図ベースで旅行の計画・実行・記録を一元管理できるWebアプリケーション
 
-Currently, two official plugins are available:
+## ✨ 機能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 🗺️ 地図機能
+- **インタラクティブ地図**: OpenStreetMapベースの見やすい地図
+- **POI表示**: 美術館・博物館・レストラン・カフェなどを自動表示
+- **地図クリック**: 地図上をクリックして場所を簡単追加
 
-## Expanding the ESLint configuration
+### 📍 場所管理
+- **場所の追加・編集・削除**: 興味のある場所を管理
+- **ステータス管理**: 興味あり→計画中→訪問済みの進捗管理
+- **カテゴリ分類**: 博物館・美術館・レストラン・カフェ等で分類
+- **詳細情報**: 営業時間・ウェブサイト・メモなどの保存
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 💾 データ管理
+- **自動保存**: ローカルストレージで自動的にデータ保存
+- **データ永続化**: ブラウザを再読み込みしてもデータが保持
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🚀 使い方
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+1. **地図を拡大**: ズーム14以上で美術館・お店が表示
+2. **POIクリック**: 表示されたPOIをクリック→「マイリストに追加」
+3. **場所管理**: サイドパネルで場所の編集・削除
+4. **地図探索**: 東京・大阪・京都など各都市で試してみよう
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🛠️ 技術スタック
+
+- **フロントエンド**: React + TypeScript + Vite
+- **地図**: React-Leaflet + OpenStreetMap
+- **UI**: Tailwind CSS + Lucide React
+- **状態管理**: Zustand
+- **データ**: OpenStreetMap Overpass API
+
+## 📦 開発
+
+```bash
+# 依存関係インストール
+npm install
+
+# 開発サーバー起動
+npm run dev
+
+# プロダクションビルド
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🎯 今後の予定
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- [ ] 旅行計画作成機能
+- [ ] 旅行記録・写真管理
+- [ ] ルート表示
+- [ ] データエクスポート/インポート
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+🤖 **Generated with [Claude Code](https://claude.ai/code)**
