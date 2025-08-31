@@ -1,0 +1,232 @@
+import { useStore } from '../../store/useStore';
+import type { Place } from '../../types/base';
+import { MapPin, Building, Utensils, Star, Edit3, Trash2 } from 'lucide-react';
+import type { JSX } from 'react';
+
+interface PlaceListProps {
+  onAddPlace: () => void;
+  onEditPlace: (place: Place) => void;
+}
+
+export function PlaceList({ onAddPlace, onEditPlace }: PlaceListProps) {
+  const { places, deletePlace, setSelectedPlace } = useStore();
+
+  const getCategoryIcon = (category: Place['category']) => {
+    switch (category) {
+      case 'museum':
+        return <Building size={16} className="text-blue-600" />;
+      case 'gallery':
+        return <Star size={16} className="text-purple-600" />;
+      case 'restaurant':
+        return <Utensils size={16} className="text-orange-600" />;
+      case 'landmark':
+        return <MapPin size={16} className="text-red-600" />;
+      default:
+        return <MapPin size={16} className="text-gray-600" />;
+    }
+  };
+
+  const getStatusColor = (status: Place['status']) => {
+    switch (status) {
+      case 'interested': return 'bg-blue-100 text-blue-700';
+      case 'planned': return 'bg-orange-100 text-orange-700';
+      case 'visited': return 'bg-green-100 text-green-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getStatusText = (status: Place['status']) => {
+    switch (status) {
+      case 'interested': return '興味あり';
+      case 'planned': return '計画中';
+      case 'visited': return '訪問済み';
+      default: return '未設定';
+    }
+  };
+
+  const handleDeletePlace = (place: Place) => {
+    if (window.confirm(`「${place.name}」を削除しますか？`)) {
+      deletePlace(place.id);
+    }
+  };
+
+  const handlePlaceClick = (place: Place) => {
+    setSelectedPlace(place);
+  };
+
+  const groupedPlaces = places.reduce((groups, place) => {
+    const status = place.status;
+    if (!groups[status]) {
+      groups[status] = [];
+    }
+    groups[status].push(place);
+    return groups;
+  }, {} as Record<Place['status'], Place[]>);
+
+  return (
+    <div className="h-full flex flex-col">
+      <div className="flex items-center justify-between p-4 border-b">
+        <h2 className="text-lg font-semibold">場所管理</h2>
+        <button
+          onClick={onAddPlace}
+          className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+        >
+          新しい場所を追加
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4">
+        {places.length === 0 ? (
+          <div className="bg-gray-50 p-6 rounded-lg text-center">
+            <MapPin size={48} className="mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-500 mb-2">場所が登録されていません</p>
+            <p className="text-gray-400 text-sm">
+              上のボタンから場所を追加してください
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* 興味あり */}
+            {groupedPlaces.interested && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  興味あり ({groupedPlaces.interested.length})
+                </h3>
+                <div className="space-y-2">
+                  {groupedPlaces.interested.map((place) => (
+                    <PlaceCard
+                      key={place.id}
+                      place={place}
+                      onEdit={onEditPlace}
+                      onDelete={handleDeletePlace}
+                      onClick={handlePlaceClick}
+                      getCategoryIcon={getCategoryIcon}
+                      getStatusColor={getStatusColor}
+                      getStatusText={getStatusText}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 計画中 */}
+            {groupedPlaces.planned && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                  計画中 ({groupedPlaces.planned.length})
+                </h3>
+                <div className="space-y-2">
+                  {groupedPlaces.planned.map((place) => (
+                    <PlaceCard
+                      key={place.id}
+                      place={place}
+                      onEdit={onEditPlace}
+                      onDelete={handleDeletePlace}
+                      onClick={handlePlaceClick}
+                      getCategoryIcon={getCategoryIcon}
+                      getStatusColor={getStatusColor}
+                      getStatusText={getStatusText}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 訪問済み */}
+            {groupedPlaces.visited && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  訪問済み ({groupedPlaces.visited.length})
+                </h3>
+                <div className="space-y-2">
+                  {groupedPlaces.visited.map((place) => (
+                    <PlaceCard
+                      key={place.id}
+                      place={place}
+                      onEdit={onEditPlace}
+                      onDelete={handleDeletePlace}
+                      onClick={handlePlaceClick}
+                      getCategoryIcon={getCategoryIcon}
+                      getStatusColor={getStatusColor}
+                      getStatusText={getStatusText}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface PlaceCardProps {
+  place: Place;
+  onEdit: (place: Place) => void;
+  onDelete: (place: Place) => void;
+  onClick: (place: Place) => void;
+  getCategoryIcon: (category: Place['category']) => JSX.Element;
+  getStatusColor: (status: Place['status']) => string;
+  getStatusText: (status: Place['status']) => string;
+}
+
+function PlaceCard({
+  place,
+  onEdit,
+  onDelete,
+  onClick,
+  getCategoryIcon,
+  getStatusColor,
+  getStatusText
+}: PlaceCardProps) {
+  return (
+    <div 
+      className="bg-white border rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer group"
+      onClick={() => onClick(place)}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            {getCategoryIcon(place.category)}
+            <h4 className="font-semibold text-gray-900 truncate">{place.name}</h4>
+          </div>
+          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{place.address}</p>
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(place.status)}`}>
+              {getStatusText(place.status)}
+            </span>
+            <span className="text-xs text-gray-500 capitalize">{place.category}</span>
+          </div>
+          {place.notes && (
+            <p className="text-sm text-gray-500 mt-2 line-clamp-2">{place.notes}</p>
+          )}
+        </div>
+        
+        <div className="flex items-center gap-1 ml-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(place);
+            }}
+            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          >
+            <Edit3 size={16} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(place);
+            }}
+            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
