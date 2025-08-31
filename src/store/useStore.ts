@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/localStorage';
-import type { Place, Trip, ViewMode } from '../types/base';
+import type { Place, Trip, ViewMode, DayPlan, Photo } from '../types/base';
 
 interface StoreActions {
   // Places
@@ -10,13 +10,19 @@ interface StoreActions {
   setSelectedPlace: (place: Place | undefined) => void;
   
   // Trips
-  addTrip: (trip: Omit<Trip, 'id'>) => void;
+  addTrip: (trip: Omit<Trip, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateTrip: (id: string, updates: Partial<Trip>) => void;
   deleteTrip: (id: string) => void;
   setSelectedTrip: (trip: Trip | undefined) => void;
   
+  // Day Plans
+  addDayPlan: (dayPlan: Omit<DayPlan, 'id'>) => void;
+  updateDayPlan: (id: string, updates: Partial<DayPlan>) => void;
+  deleteDayPlan: (id: string) => void;
+  getDayPlansForTrip: (tripId: string) => DayPlan[];
+  
   // Photos
-  addPhoto: (photo: any) => void;
+  addPhoto: (photo: Omit<Photo, 'id' | 'createdAt'>) => void;
   deletePhoto: (id: string) => void;
   
   // View Mode
@@ -35,7 +41,8 @@ const generateId = () => Date.now().toString() + Math.random().toString(36).subs
 interface AppState {
   places: Place[];
   trips: Trip[];
-  photos: any[];
+  dayPlans: DayPlan[];
+  photos: Photo[];
   schedules: any[];
   exhibitions: any[];
   currentViewMode: ViewMode;
@@ -47,6 +54,7 @@ interface AppState {
 const initialState: AppState = {
   places: [],
   trips: [],
+  dayPlans: [],
   photos: [],
   schedules: [],
   exhibitions: [],
@@ -94,7 +102,13 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
   
   // Trips
   addTrip: (tripData) => {
-    const trip: Trip = { ...tripData, id: generateId() };
+    const now = new Date().toISOString();
+    const trip: Trip = { 
+      ...tripData, 
+      id: generateId(),
+      createdAt: now,
+      updatedAt: now
+    };
     set((state) => ({
       trips: [...state.trips, trip]
     }));
@@ -104,7 +118,7 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
   updateTrip: (id, updates) => {
     set((state) => ({
       trips: state.trips.map(trip => 
-        trip.id === id ? { ...trip, ...updates } : trip
+        trip.id === id ? { ...trip, ...updates, updatedAt: new Date().toISOString() } : trip
       )
     }));
     get().saveData();
@@ -122,9 +136,42 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
     set({ selectedTrip: trip });
   },
   
+  // Day Plans
+  addDayPlan: (dayPlanData) => {
+    const dayPlan: DayPlan = { ...dayPlanData, id: generateId() };
+    set((state) => ({
+      dayPlans: [...state.dayPlans, dayPlan]
+    }));
+    get().saveData();
+  },
+  
+  updateDayPlan: (id, updates) => {
+    set((state) => ({
+      dayPlans: state.dayPlans.map(plan => 
+        plan.id === id ? { ...plan, ...updates } : plan
+      )
+    }));
+    get().saveData();
+  },
+  
+  deleteDayPlan: (id) => {
+    set((state) => ({
+      dayPlans: state.dayPlans.filter(plan => plan.id !== id)
+    }));
+    get().saveData();
+  },
+  
+  getDayPlansForTrip: (tripId) => {
+    return get().dayPlans.filter(plan => plan.tripId === tripId);
+  },
+  
   // Photos
   addPhoto: (photoData) => {
-    const photo = { ...photoData, id: generateId() };
+    const photo: Photo = { 
+      ...photoData, 
+      id: generateId(),
+      createdAt: new Date().toISOString()
+    };
     set((state) => ({
       photos: [...state.photos, photo]
     }));
@@ -154,6 +201,7 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
     const dataToSave = {
       places: state.places,
       trips: state.trips,
+      dayPlans: state.dayPlans,
       photos: state.photos,
       schedules: state.schedules,
       exhibitions: state.exhibitions,

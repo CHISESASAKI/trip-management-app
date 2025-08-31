@@ -1,7 +1,9 @@
 import { useStore } from '../../store/useStore';
 import type { Place } from '../../types/base';
-import { MapPin, Building, Utensils, Star, Edit3, Trash2 } from 'lucide-react';
+import { MapPin, Building, Utensils, Star, Edit3, Trash2, Plus } from 'lucide-react';
 import type { JSX } from 'react';
+import { AddToTripModal } from './AddToTripModal';
+import { useState } from 'react';
 
 interface PlaceListProps {
   onAddPlace: () => void;
@@ -10,6 +12,8 @@ interface PlaceListProps {
 
 export function PlaceList({ onAddPlace, onEditPlace }: PlaceListProps) {
   const { places, deletePlace, setSelectedPlace } = useStore();
+  const [showAddToTripModal, setShowAddToTripModal] = useState(false);
+  const [selectedPlaceForTrip, setSelectedPlaceForTrip] = useState<Place | undefined>();
 
   const getCategoryIcon = (category: Place['category']) => {
     switch (category) {
@@ -52,6 +56,16 @@ export function PlaceList({ onAddPlace, onEditPlace }: PlaceListProps) {
 
   const handlePlaceClick = (place: Place) => {
     setSelectedPlace(place);
+  };
+
+  const handleAddToTrip = (place: Place) => {
+    setSelectedPlaceForTrip(place);
+    setShowAddToTripModal(true);
+  };
+
+  const handleCloseAddToTripModal = () => {
+    setShowAddToTripModal(false);
+    setSelectedPlaceForTrip(undefined);
   };
 
   const groupedPlaces = places.reduce((groups, place) => {
@@ -102,6 +116,7 @@ export function PlaceList({ onAddPlace, onEditPlace }: PlaceListProps) {
                       onEdit={onEditPlace}
                       onDelete={handleDeletePlace}
                       onClick={handlePlaceClick}
+                      onAddToTrip={handleAddToTrip}
                       getCategoryIcon={getCategoryIcon}
                       getStatusColor={getStatusColor}
                       getStatusText={getStatusText}
@@ -126,6 +141,7 @@ export function PlaceList({ onAddPlace, onEditPlace }: PlaceListProps) {
                       onEdit={onEditPlace}
                       onDelete={handleDeletePlace}
                       onClick={handlePlaceClick}
+                      onAddToTrip={handleAddToTrip}
                       getCategoryIcon={getCategoryIcon}
                       getStatusColor={getStatusColor}
                       getStatusText={getStatusText}
@@ -150,6 +166,7 @@ export function PlaceList({ onAddPlace, onEditPlace }: PlaceListProps) {
                       onEdit={onEditPlace}
                       onDelete={handleDeletePlace}
                       onClick={handlePlaceClick}
+                      onAddToTrip={handleAddToTrip}
                       getCategoryIcon={getCategoryIcon}
                       getStatusColor={getStatusColor}
                       getStatusText={getStatusText}
@@ -161,6 +178,14 @@ export function PlaceList({ onAddPlace, onEditPlace }: PlaceListProps) {
           </div>
         )}
       </div>
+
+      {/* Add to Trip Modal */}
+      {showAddToTripModal && selectedPlaceForTrip && (
+        <AddToTripModal
+          place={selectedPlaceForTrip}
+          onClose={handleCloseAddToTripModal}
+        />
+      )}
     </div>
   );
 }
@@ -170,6 +195,7 @@ interface PlaceCardProps {
   onEdit: (place: Place) => void;
   onDelete: (place: Place) => void;
   onClick: (place: Place) => void;
+  onAddToTrip: (place: Place) => void;
   getCategoryIcon: (category: Place['category']) => JSX.Element;
   getStatusColor: (status: Place['status']) => string;
   getStatusText: (status: Place['status']) => string;
@@ -180,6 +206,7 @@ function PlaceCard({
   onEdit,
   onDelete,
   onClick,
+  onAddToTrip,
   getCategoryIcon,
   getStatusColor,
   getStatusText
@@ -208,6 +235,16 @@ function PlaceCard({
         </div>
         
         <div className="flex items-center gap-1 ml-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToTrip(place);
+            }}
+            className="p-1.5 md:p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+            aria-label="旅行に追加"
+          >
+            <Plus size={14} className="md:w-4 md:h-4" />
+          </button>
           <button
             onClick={(e) => {
               e.stopPropagation();

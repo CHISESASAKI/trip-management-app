@@ -1,9 +1,11 @@
 import { useStore } from '../../store/useStore';
 import type { Place, ViewMode } from '../../types/base';
-import { MapPin, Calendar, Camera, Menu, X } from 'lucide-react';
+import { MapPin, Calendar, Settings, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { PlaceList } from '../PlaceManagement/PlaceList';
 import { PlaceForm } from '../PlaceManagement/PlaceForm';
+import { TripList } from '../TripManagement/TripList';
+import { DataManager } from '../DataManagement/DataManager';
 
 interface SidePanelProps {
   className?: string;
@@ -18,7 +20,7 @@ export function SidePanel({ className = '' }: SidePanelProps) {
   const viewModes: { mode: ViewMode; label: string; icon: React.ReactNode }[] = [
     { mode: 'places', label: '場所管理', icon: <MapPin size={20} /> },
     { mode: 'planning', label: '旅行計画', icon: <Calendar size={20} /> },
-    { mode: 'records', label: '旅行記録', icon: <Camera size={20} /> },
+    { mode: 'records', label: 'データ管理', icon: <Settings size={20} /> },
   ];
 
   if (isCollapsed) {
@@ -116,10 +118,10 @@ export function SidePanel({ className = '' }: SidePanelProps) {
           </div>
         )}
         {currentViewMode === 'planning' && (
-          <PlanningPanel />
+          <TripList />
         )}
         {currentViewMode === 'records' && (
-          <RecordsPanel />
+          <DataManager />
         )}
       </div>
 
@@ -171,44 +173,3 @@ export function SidePanel({ className = '' }: SidePanelProps) {
   );
 }
 
-// Placeholder components for each panel
-function PlanningPanel() {
-  return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">旅行計画</h2>
-        <button className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
-          新しい計画を作成
-        </button>
-      </div>
-      
-      <div className="space-y-4">
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-gray-500 text-center">旅行計画がありません</p>
-          <p className="text-gray-400 text-sm text-center mt-2">
-            上のボタンから新しい旅行計画を作成してください
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RecordsPanel() {
-  return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">旅行記録</h2>
-      </div>
-      
-      <div className="space-y-4">
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-gray-500 text-center">旅行記録がありません</p>
-          <p className="text-gray-400 text-sm text-center mt-2">
-            完了した旅行がここに表示されます
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}

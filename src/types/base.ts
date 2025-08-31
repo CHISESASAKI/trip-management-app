@@ -15,13 +15,53 @@ export interface Place {
 export interface Trip {
   id: string;
   name: string;
+  description?: string;
   startDate: string;
   endDate: string;
   theme?: string;
   status: 'planned' | 'in_progress' | 'completed';
-  places: string[];
+  places: string[]; // Place IDs
+  budget?: number;
+  actualCost?: number;
   notes?: string;
   weather?: string;
+  images?: string[]; // Image URLs or base64
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 旅行計画の1日のスケジュール
+export interface DayPlan {
+  id: string;
+  tripId: string;
+  date: string;
+  places: DayPlaceItem[];
+  notes?: string;
+}
+
+// 1日の中での場所と時間
+export interface DayPlaceItem {
+  placeId: string;
+  startTime?: string;
+  endTime?: string;
+  transportationToNext?: 'walk' | 'train' | 'bus' | 'taxi' | 'car';
+  estimatedTravelTime?: number; // minutes
+  notes?: string;
+}
+
+// 写真・記録
+export interface Photo {
+  id: string;
+  tripId?: string;
+  placeId?: string;
+  url: string; // base64 or URL
+  caption?: string;
+  takenAt?: string; // ISO string
+  location?: {
+    lat: number;
+    lng: number;
+  };
+  createdAt: string;
 }
 
 export type ViewMode = 'places' | 'planning' | 'records';
