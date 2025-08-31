@@ -68,20 +68,21 @@ export function SidePanel({ className = '' }: SidePanelProps) {
           </button>
         </div>
         
-        {/* View Mode Tabs */}
+        {/* View Mode Tabs - Mobile: Icons only, Desktop: With labels */}
         <div className="flex space-x-1 mt-4">
           {viewModes.map(({ mode, label, icon }) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center justify-center space-x-1 px-2 md:px-3 py-2 rounded-lg text-sm font-medium transition-colors flex-1 md:flex-none ${
                 currentViewMode === mode
                   ? 'bg-blue-100 text-blue-700'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
+              title={label} // Add tooltip for mobile
             >
               {icon}
-              <span className="hidden sm:inline">{label}</span>
+              <span className="hidden md:inline ml-1">{label}</span>
             </button>
           ))}
         </div>
@@ -92,9 +93,9 @@ export function SidePanel({ className = '' }: SidePanelProps) {
         {currentViewMode === 'places' && (
           <div>
             {/* Instructions */}
-            <div className="p-4 bg-blue-50 border-b">
+            <div className="p-3 md:p-4 bg-blue-50 border-b">
               <h3 className="text-sm font-semibold text-blue-900 mb-2">💡 使い方</h3>
-              <div className="space-y-1 text-xs text-blue-700">
+              <div className="space-y-1 text-xs md:text-sm text-blue-700">
                 <p>• 地図を拡大すると美術館・お店が表示</p>
                 <p>• POIをクリック→「マイリストに追加」</p>
                 <p>• 空いた場所をクリックして場所追加</p>

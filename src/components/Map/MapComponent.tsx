@@ -70,7 +70,12 @@ function MapClickHandler() {
       setSelectedPlace(undefined);
       
       // Show confirmation to add place at clicked location
-      if (window.confirm(`この場所（緯度: ${lat.toFixed(6)}, 経度: ${lng.toFixed(6)}）に場所を追加しますか？`)) {
+      // Simplified message for mobile
+      const message = window.innerWidth < 768 
+        ? '📍 この場所に追加しますか？'
+        : `この場所（緯度: ${lat.toFixed(6)}, 経度: ${lng.toFixed(6)}）に場所を追加しますか？`;
+      
+      if (window.confirm(message)) {
         searchLocationInfo(lat, lng, addPlace);
       }
     },
@@ -192,11 +197,11 @@ export function MapComponent({ className = '' }: MapComponentProps) {
               click: () => handleMarkerClick(place),
             }}
           >
-            <Popup>
-              <div className="p-2 min-w-48">
-                <h3 className="font-semibold text-lg mb-1">{place.name}</h3>
-                <p className="text-sm text-gray-600 mb-2">{place.address}</p>
-                <div className="flex items-center gap-2 mb-2">
+            <Popup maxWidth={300} className="custom-popup">
+              <div className="p-2 min-w-48 max-w-72">
+                <h3 className="font-semibold text-base md:text-lg mb-1 leading-tight">{place.name}</h3>
+                <p className="text-xs md:text-sm text-gray-600 mb-2 leading-relaxed">{place.address}</p>
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span 
                     className="px-2 py-1 rounded-full text-xs font-medium"
                     style={{ 
@@ -210,7 +215,7 @@ export function MapComponent({ className = '' }: MapComponentProps) {
                   <span className="text-xs text-gray-500 capitalize">{place.category}</span>
                 </div>
                 {place.notes && (
-                  <p className="text-sm text-gray-700 mt-2">{place.notes}</p>
+                  <p className="text-xs md:text-sm text-gray-700 mt-2 leading-relaxed">{place.notes}</p>
                 )}
                 {place.openingHours && (
                   <p className="text-xs text-gray-500 mt-1">
@@ -223,22 +228,23 @@ export function MapComponent({ className = '' }: MapComponentProps) {
         ))}
       </MapContainer>
       
-      {/* Map controls */}
-      <div className="absolute top-4 right-4 space-y-2 z-10">
+      {/* Map controls - Responsive positioning */}
+      <div className="absolute top-4 left-4 md:top-4 md:right-4 space-y-2 z-10">
         <button
           onClick={() => setShowPOIs(!showPOIs)}
-          className={`px-3 py-2 rounded-lg shadow-lg text-sm font-medium transition-colors ${
+          className={`px-3 py-2 rounded-lg shadow-lg text-xs md:text-sm font-medium transition-colors ${
             showPOIs 
               ? 'bg-blue-600 text-white hover:bg-blue-700' 
               : 'bg-white text-gray-700 hover:bg-gray-50'
           }`}
         >
-          {showPOIs ? 'POI非表示' : 'POI表示'}
+          <span className="hidden md:inline">{showPOIs ? 'POI非表示' : 'POI表示'}</span>
+          <span className="md:hidden">{showPOIs ? 'POI' : 'POI'}</span>
         </button>
       </div>
 
-      {/* Map legend */}
-      <div className="absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg z-10">
+      {/* Map legend - Hide on small screens, show on hover/click */}
+      <div className="hidden md:block absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg z-10">
         <h4 className="text-sm font-semibold mb-2">凡例</h4>
         
         <div className="space-y-1 mb-3">

@@ -65,13 +65,14 @@ export function PlaceList({ onAddPlace, onEditPlace }: PlaceListProps) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-lg font-semibold">場所管理</h2>
+      <div className="flex items-center justify-between p-3 md:p-4 border-b">
+        <h2 className="text-base md:text-lg font-semibold">場所管理</h2>
         <button
           onClick={onAddPlace}
-          className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          className="px-2 md:px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs md:text-sm"
         >
-          新しい場所を追加
+          <span className="hidden md:inline">新しい場所を追加</span>
+          <span className="md:hidden">追加</span>
         </button>
       </div>
 
@@ -206,24 +207,26 @@ function PlaceCard({
           )}
         </div>
         
-        <div className="flex items-center gap-1 ml-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 ml-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEdit(place);
             }}
-            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-1.5 md:p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            aria-label="編集"
           >
-            <Edit3 size={16} />
+            <Edit3 size={14} className="md:w-4 md:h-4" />
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onDelete(place);
             }}
-            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-1.5 md:p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            aria-label="削除"
           >
-            <Trash2 size={16} />
+            <Trash2 size={14} className="md:w-4 md:h-4" />
           </button>
         </div>
       </div>
