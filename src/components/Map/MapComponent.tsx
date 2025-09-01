@@ -4,6 +4,8 @@ import type { Place } from '../../types/base';
 import L from 'leaflet';
 import { useEffect, useState } from 'react';
 import { POILayer } from './POILayer';
+import { RouteLayer } from './RouteLayer';
+import { Moon, Sun } from 'lucide-react';
 
 // Fix for default markers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -153,6 +155,8 @@ export function MapComponent({ className = '' }: MapComponentProps) {
     places, 
     setSelectedPlace, 
     mapViewState,
+    isDarkMode,
+    toggleTheme,
     loadData 
   } = useStore();
 
@@ -187,6 +191,9 @@ export function MapComponent({ className = '' }: MapComponentProps) {
         
         {/* POI Layer */}
         {showPOIs && <POILayer />}
+        
+        {/* Route Layer */}
+        <RouteLayer />
         
         {places.map((place) => (
           <Marker
@@ -235,11 +242,23 @@ export function MapComponent({ className = '' }: MapComponentProps) {
           className={`px-3 py-2 rounded-lg shadow-lg text-xs md:text-sm font-medium transition-colors ${
             showPOIs 
               ? 'bg-blue-600 text-white hover:bg-blue-700' 
-              : 'bg-white text-gray-700 hover:bg-gray-50'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
         >
           <span className="hidden md:inline">{showPOIs ? 'POI非表示' : 'POI表示'}</span>
           <span className="md:hidden">{showPOIs ? 'POI' : 'POI'}</span>
+        </button>
+        
+        <button
+          onClick={toggleTheme}
+          className="px-3 py-2 rounded-lg shadow-lg text-xs md:text-sm font-medium transition-colors bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+          aria-label="Toggle theme"
+        >
+          {isDarkMode ? (
+            <Sun size={16} className="md:w-5 md:h-5" />
+          ) : (
+            <Moon size={16} className="md:w-5 md:h-5" />
+          )}
         </button>
       </div>
 

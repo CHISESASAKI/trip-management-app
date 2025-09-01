@@ -1,27 +1,44 @@
 import { useStore } from '../../store/useStore';
-import type { Place, ViewMode } from '../../types/base';
+import type { Place, ViewMode, Trip } from '../../types/base';
 import { MapPin, Calendar, Settings, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PlaceList } from '../PlaceManagement/PlaceList';
 import { PlaceForm } from '../PlaceManagement/PlaceForm';
 import { TripList } from '../TripManagement/TripList';
 import { DataManager } from '../DataManagement/DataManager';
+import { SearchFilter } from '../Search/SearchFilter';
 
 interface SidePanelProps {
   className?: string;
 }
 
 export function SidePanel({ className = '' }: SidePanelProps) {
-  const { currentViewMode, setViewMode, selectedPlace, selectedTrip } = useStore();
+  const { currentViewMode, setViewMode, selectedPlace, selectedTrip, places, trips } = useStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showPlaceForm, setShowPlaceForm] = useState(false);
   const [editingPlace, setEditingPlace] = useState<Place | undefined>();
+  const [filteredPlaces, setFilteredPlaces] = useState<Place[]>(places);
+  const [filteredTrips, setFilteredTrips] = useState<Trip[]>(trips);
+  
+  // 現在は基本的な検索UIのみ実装。将来的にはフィルタされた結果を各コンポーネントに渡す
+  console.log('Filtered results:', { places: filteredPlaces.length, trips: filteredTrips.length });
 
   const viewModes: { mode: ViewMode; label: string; icon: React.ReactNode }[] = [
     { mode: 'places', label: '場所管理', icon: <MapPin size={20} /> },
     { mode: 'planning', label: '旅行計画', icon: <Calendar size={20} /> },
     { mode: 'records', label: 'データ管理', icon: <Settings size={20} /> },
   ];
+
+  // 元データが更新された時にフィルタ状態をリセット
+  useEffect(() => {
+    setFilteredPlaces(places);
+    setFilteredTrips(trips);
+  }, [places, trips]);
+
+  const handleFilteredResults = (newFilteredPlaces: Place[], newFilteredTrips: Trip[]) => {
+    setFilteredPlaces(newFilteredPlaces);
+    setFilteredTrips(newFilteredTrips);
+  };
 
   if (isCollapsed) {
     return (
@@ -92,6 +109,17 @@ export function SidePanel({ className = '' }: SidePanelProps) {
 
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto">
+        {/* Search Filter - Show only for places and planning modes */}
+        {(currentViewMode === 'places' || currentViewMode === 'planning') && (
+          <div className="p-3 md:p-4 border-b bg-white dark:bg-gray-800">
+            <SearchFilter 
+              places={places}
+              trips={trips}
+              onFilteredResults={handleFilteredResults}
+            />
+          </div>
+        )}
+        
         {currentViewMode === 'places' && (
           <div>
             {/* Instructions */}

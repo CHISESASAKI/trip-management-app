@@ -28,6 +28,9 @@ interface StoreActions {
   // View Mode
   setViewMode: (mode: ViewMode) => void;
   
+  // Theme
+  toggleTheme: () => void;
+  
   // Map
   setMapViewState: (viewState: { center: [number, number]; zoom: number }) => void;
   
@@ -48,6 +51,7 @@ interface AppState {
   currentViewMode: ViewMode;
   selectedPlace?: Place;
   selectedTrip?: Trip;
+  isDarkMode: boolean;
   mapViewState: { center: [number, number]; zoom: number };
 }
 
@@ -61,6 +65,8 @@ const initialState: AppState = {
   currentViewMode: 'places',
   selectedPlace: undefined,
   selectedTrip: undefined,
+  isDarkMode: typeof window !== 'undefined' ? 
+    window.matchMedia('(prefers-color-scheme: dark)').matches : false,
   mapViewState: {
     center: [35.6762, 139.6503], // Tokyo
     zoom: 10
@@ -190,6 +196,23 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
     set({ currentViewMode: mode });
   },
   
+  // Theme
+  toggleTheme: () => {
+    set((state) => {
+      const newIsDarkMode = !state.isDarkMode;
+      // HTMLクラスを更新してTailwindのダークモードを適用
+      if (typeof window !== 'undefined') {
+        if (newIsDarkMode) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+      return { isDarkMode: newIsDarkMode };
+    });
+    get().saveData();
+  },
+  
   // Map
   setMapViewState: (viewState) => {
     set({ mapViewState: viewState });
@@ -205,6 +228,7 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
       photos: state.photos,
       schedules: state.schedules,
       exhibitions: state.exhibitions,
+      isDarkMode: state.isDarkMode,
       mapViewState: state.mapViewState
     };
     saveToLocalStorage('tripManagementData', dataToSave);
@@ -217,6 +241,15 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
         ...state,
         ...savedData
       }));
+      
+      // ダークモード状態をHTMLクラスに適用
+      if (typeof window !== 'undefined' && savedData.isDarkMode) {
+        if (savedData.isDarkMode) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
     }
   }
 }));

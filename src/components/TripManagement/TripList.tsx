@@ -1,13 +1,16 @@
 import { useStore } from '../../store/useStore';
 import type { Trip } from '../../types/base';
-import { Calendar, MapPin, Edit3, Trash2, DollarSign, Clock, Camera } from 'lucide-react';
+import { Calendar, MapPin, Edit3, Trash2, DollarSign, Clock, Camera, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { TripForm } from './TripForm';
+import { PhotoUpload } from '../Photos/PhotoUpload';
 
 export function TripList() {
   const { trips, deleteTrip, setSelectedTrip } = useStore();
   const [showTripForm, setShowTripForm] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | undefined>();
+  const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+  const [photoUploadTripId, setPhotoUploadTripId] = useState<string | undefined>();
 
   const handleDeleteTrip = (trip: Trip) => {
     if (window.confirm(`「${trip.name}」を削除しますか？`)) {
@@ -32,6 +35,16 @@ export function TripList() {
 
   const handleTripClick = (trip: Trip) => {
     setSelectedTrip(trip);
+  };
+
+  const handlePhotoUpload = (trip: Trip) => {
+    setPhotoUploadTripId(trip.id);
+    setShowPhotoUpload(true);
+  };
+
+  const handleClosePhotoUpload = () => {
+    setShowPhotoUpload(false);
+    setPhotoUploadTripId(undefined);
   };
 
   const getStatusColor = (status: Trip['status']) => {
@@ -123,6 +136,7 @@ export function TripList() {
                       onEdit={handleEditTrip}
                       onDelete={handleDeleteTrip}
                       onClick={handleTripClick}
+                      onPhotoUpload={handlePhotoUpload}
                       getStatusColor={getStatusColor}
                       getStatusText={getStatusText}
                       formatDate={formatDate}
@@ -148,6 +162,7 @@ export function TripList() {
                       onEdit={handleEditTrip}
                       onDelete={handleDeleteTrip}
                       onClick={handleTripClick}
+                      onPhotoUpload={handlePhotoUpload}
                       getStatusColor={getStatusColor}
                       getStatusText={getStatusText}
                       formatDate={formatDate}
@@ -173,6 +188,7 @@ export function TripList() {
                       onEdit={handleEditTrip}
                       onDelete={handleDeleteTrip}
                       onClick={handleTripClick}
+                      onPhotoUpload={handlePhotoUpload}
                       getStatusColor={getStatusColor}
                       getStatusText={getStatusText}
                       formatDate={formatDate}
@@ -193,6 +209,18 @@ export function TripList() {
           onClose={handleCloseForm}
         />
       )}
+
+      {/* Photo Upload Modal */}
+      {showPhotoUpload && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-md">
+            <PhotoUpload 
+              tripId={photoUploadTripId}
+              onClose={handleClosePhotoUpload}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -202,6 +230,7 @@ interface TripCardProps {
   onEdit: (trip: Trip) => void;
   onDelete: (trip: Trip) => void;
   onClick: (trip: Trip) => void;
+  onPhotoUpload: (trip: Trip) => void;
   getStatusColor: (status: Trip['status']) => string;
   getStatusText: (status: Trip['status']) => string;
   formatDate: (date: string) => string;
@@ -213,6 +242,7 @@ function TripCard({
   onEdit,
   onDelete,
   onClick,
+  onPhotoUpload,
   getStatusColor,
   getStatusText,
   formatDate,
@@ -280,6 +310,16 @@ function TripCard({
         </div>
         
         <div className="flex items-center gap-1 ml-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPhotoUpload(trip);
+            }}
+            className="p-1.5 md:p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+            aria-label="写真追加"
+          >
+            <Plus size={14} className="md:w-4 md:h-4" />
+          </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
