@@ -42,7 +42,7 @@ export function SidePanel({ className = '' }: SidePanelProps) {
 
   if (isCollapsed) {
     return (
-      <div className={`bg-white shadow-lg border-l ${className}`}>
+      <div className={`bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 ${className}`}>
         <div className="p-4 border-b">
           <button
             onClick={() => setIsCollapsed(false)}
@@ -74,7 +74,7 @@ export function SidePanel({ className = '' }: SidePanelProps) {
   }
 
   return (
-    <div className={`bg-white shadow-lg border-l flex flex-col ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 flex flex-col ${className}`}>
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between">

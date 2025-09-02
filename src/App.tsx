@@ -1,10 +1,20 @@
 import { MapComponent } from './components/Map/MapComponent';
 import { SidePanel } from './components/SidePanel/SidePanel';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { useStore } from './store/useStore';
 
 function App() {
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+  const { initializeAuth, loadData } = useStore();
+
+  useEffect(() => {
+    // データをロード
+    loadData();
+    
+    // Firebase認証を初期化
+    initializeAuth();
+  }, [initializeAuth, loadData]);
 
   return (
     <div className="h-screen flex relative bg-gray-50 dark:bg-gray-900">

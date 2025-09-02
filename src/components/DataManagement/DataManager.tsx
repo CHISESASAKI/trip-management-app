@@ -1,6 +1,7 @@
 import { useStore } from '../../store/useStore';
 import { Download, Upload, RotateCcw, AlertCircle, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
+import { FirebaseSettings } from '../Settings/FirebaseSettings';
 
 export function DataManager() {
   const { places, trips, dayPlans, photos, saveData } = useStore();
@@ -184,6 +185,11 @@ export function DataManager() {
         <div className="text-sm text-gray-500 mt-2">
           合計: {getTotalDataSize()}件のデータ
         </div>
+      </div>
+
+      {/* Firebase設定 */}
+      <div className="mb-6">
+        <FirebaseSettings />
       </div>
 
       <div className="space-y-4">
