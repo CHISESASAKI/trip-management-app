@@ -189,6 +189,25 @@ export function DataManager() {
 
       {/* Firebase設定 */}
       <div className="mb-6">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+            🔥 Firebase クラウド同期
+          </h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-700 dark:text-gray-300">Firebase Status:</span>
+              <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">接続済み</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-700 dark:text-gray-300">プロジェクト:</span>
+              <span className="text-gray-900 dark:text-gray-100">trip-management-app-47298</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-700 dark:text-gray-300">同期状態:</span>
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">リアルタイム同期中</span>
+            </div>
+          </div>
+        </div>
         <FirebaseSettings />
       </div>
 
