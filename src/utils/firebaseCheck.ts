@@ -1,12 +1,12 @@
 // Firebase設定チェック用ユーティリティ
 export function checkFirebaseConfig() {
   const config = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAimaFngWw3k606oy9UWgSrKnXcfbvASDE",
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "trip-management-app-47298.firebaseapp.com",
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "trip-management-app-47298",
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "trip-management-app-47298.firebasestorage.app",
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "338823345553",
+    appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:338823345553:web:0ae79583cef43b1ff5d630"
   };
 
   const missing: string[] = [];

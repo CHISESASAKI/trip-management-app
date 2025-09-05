@@ -15,10 +15,8 @@ function App() {
     // Firebase認証を初期化
     initializeAuth();
     
-    // Firebase自動ログイン
-    setTimeout(() => {
-      signInAnonymously().catch(console.error);
-    }, 1000);
+    // Firebase自動ログイン（即座に実行）
+    signInAnonymously().catch(console.error);
   }, [initializeAuth, loadData, signInAnonymously]);
 
   return (
