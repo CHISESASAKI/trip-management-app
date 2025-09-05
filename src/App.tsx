@@ -17,6 +17,18 @@ function App() {
     
     // Firebase自動ログイン（即座に実行）
     signInAnonymously().catch(console.error);
+
+    // Service Worker 更新通知を監視
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'SW_UPDATED') {
+          console.log('Service Worker updated, reloading page...');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
+      });
+    }
   }, [initializeAuth, loadData, signInAnonymously]);
 
   return (

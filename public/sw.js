@@ -1,6 +1,6 @@
-const CACHE_NAME = 'trip-management-v1';
-const STATIC_CACHE_NAME = 'trip-static-v1';
-const DYNAMIC_CACHE_NAME = 'trip-dynamic-v1';
+const CACHE_NAME = 'trip-management-v2';
+const STATIC_CACHE_NAME = 'trip-static-v2';
+const DYNAMIC_CACHE_NAME = 'trip-dynamic-v2';
 
 // キャッシュするリソース
 const STATIC_ASSETS = [
@@ -49,6 +49,18 @@ self.addEventListener('activate', event => {
           }
         })
       );
+    }).then(() => {
+      // 即座にクライアントの制御を取得
+      return self.clients.claim();
+    })
+  );
+  
+  // すべてのクライアントに更新を通知
+  event.waitUntil(
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => {
+        client.postMessage({ type: 'SW_UPDATED' });
+      });
     })
   );
 });
