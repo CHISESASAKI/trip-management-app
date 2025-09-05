@@ -6,7 +6,7 @@ import { useStore } from './store/useStore';
 
 function App() {
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
-  const { initializeAuth, loadData } = useStore();
+  const { initializeAuth, loadData, signInAnonymously } = useStore();
 
   useEffect(() => {
     // データをロード
@@ -14,7 +14,12 @@ function App() {
     
     // Firebase認証を初期化
     initializeAuth();
-  }, [initializeAuth, loadData]);
+    
+    // Firebase自動ログイン
+    setTimeout(() => {
+      signInAnonymously().catch(console.error);
+    }, 1000);
+  }, [initializeAuth, loadData, signInAnonymously]);
 
   return (
     <div className="h-screen flex relative bg-gray-50 dark:bg-gray-900">
