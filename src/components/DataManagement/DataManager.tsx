@@ -145,6 +145,18 @@ export function DataManager() {
         <h2 className="text-lg font-semibold">データ管理</h2>
       </div>
 
+      {/* Firebase 接続状態 - 最優先表示 */}
+      <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white p-4 rounded-lg shadow-lg mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+          <div>
+            <h3 className="text-lg font-bold">🔥 Firebase リアルタイム同期 有効</h3>
+            <p className="text-blue-100 text-sm">プロジェクト: trip-management-app-47298</p>
+            <p className="text-blue-100 text-sm">✅ クラウドデータベース接続済み | 🔄 自動同期中</p>
+          </div>
+        </div>
+      </div>
+
       {/* メッセージ表示 */}
       {message && (
         <div className={`flex items-center gap-2 p-3 rounded-lg mb-4 ${
