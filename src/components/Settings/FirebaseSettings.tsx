@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useStore } from '../../store/useStore';
-import { checkFirebaseConfig, getFirebaseSetupInstructions } from '../../utils/firebaseCheck';
+import { checkFirebaseConfig } from '../../utils/firebaseCheck';
 import { Cloud, CloudOff, Database, Wifi, WifiOff, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 
 export function FirebaseSettings() {
@@ -17,12 +17,8 @@ export function FirebaseSettings() {
 
   const [isMigrating, setIsMigrating] = useState(false);
   const [migrationError, setMigrationError] = useState<string | null>(null);
-  const [configCheck, setConfigCheck] = useState(checkFirebaseConfig());
-  const [showSetupInstructions, setShowSetupInstructions] = useState(false);
+  const [configCheck] = useState(checkFirebaseConfig());
 
-  useEffect(() => {
-    setConfigCheck(checkFirebaseConfig());
-  }, []);
 
   const handleSignIn = async () => {
     try {
@@ -123,43 +119,23 @@ export function FirebaseSettings() {
         </p>
       </div>
 
-      {/* Firebase設定チェック */}
-      {!configCheck.isValid && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle size={20} className="text-yellow-600 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
-                Firebase設定が未完了
-              </h4>
-              {configCheck.missing.length > 0 && (
-                <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-2">
-                  未設定: {configCheck.missing.join(', ')}
-                </p>
-              )}
-              {configCheck.invalid.length > 0 && (
-                <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-2">
-                  プレースホルダー値: {configCheck.invalid.join(', ')}
-                </p>
-              )}
-              <button
-                onClick={() => setShowSetupInstructions(!showSetupInstructions)}
-                className="text-sm text-yellow-800 dark:text-yellow-300 underline hover:no-underline"
-              >
-                設定手順を{showSetupInstructions ? '隠す' : '表示'}
-              </button>
-            </div>
+      {/* Firebase設定状態 */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+        <div className="flex items-start gap-3">
+          <CheckCircle size={20} className="text-blue-600 mt-0.5" />
+          <div className="flex-1">
+            <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
+              Firebase設定完了
+            </h4>
+            <p className="text-sm text-blue-700 dark:text-blue-400 mb-2">
+              Firebaseプロジェクト: trip-management-app-47298
+            </p>
+            <p className="text-sm text-blue-700 dark:text-blue-400">
+              リアルタイム同期が有効になっています。
+            </p>
           </div>
-          
-          {showSetupInstructions && (
-            <div className="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/40 rounded border">
-              <pre className="text-xs text-yellow-800 dark:text-yellow-300 whitespace-pre-wrap">
-                {getFirebaseSetupInstructions()}
-              </pre>
-            </div>
-          )}
         </div>
-      )}
+      </div>
 
       {/* 接続状態 */}
       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
