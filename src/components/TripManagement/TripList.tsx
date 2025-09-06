@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { TripForm } from './TripForm';
 import { PhotoUpload } from '../Photos/PhotoUpload';
 import { TripRecordEditor } from '../TripRecord/TripRecordEditor';
+import { EmptyState } from '../UI/EmptyState';
 
 export function TripList() {
   const { trips, deleteTrip, setSelectedTrip } = useStore();
@@ -125,13 +126,19 @@ export function TripList() {
 
       <div className="flex-1 overflow-y-auto p-3 md:p-4">
         {trips.length === 0 ? (
-          <div className="bg-gray-50 p-6 rounded-lg text-center">
-            <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500 mb-2">旅行計画がありません</p>
-            <p className="text-gray-400 text-sm">
-              上のボタンから新しい旅行計画を作成してください
-            </p>
-          </div>
+          <EmptyState
+            icon={<Calendar size={48} />}
+            title="まだ旅行計画がありません"
+            description="素敵な旅行計画を立てて、一人旅を充実させましょう！"
+            actionLabel="最初の旅行計画を作成"
+            onAction={handleAddTrip}
+            suggestions={[
+              "まずは場所管理タブで行きたい場所を登録しましょう",
+              "日程、予算、テーマを設定して計画を立てます",
+              "登録した場所を旅行に追加して詳細なプランを作成",
+              "旅行中・旅行後は写真をアップロードして思い出を記録"
+            ]}
+          />
         ) : (
           <div className="space-y-6">
             {/* 計画中 */}

@@ -3,6 +3,7 @@ import type { Place } from '../../types/base';
 import { MapPin, Building, Utensils, Star, Edit3, Trash2, Plus } from 'lucide-react';
 import type { JSX } from 'react';
 import { AddToTripModal } from './AddToTripModal';
+import { EmptyState } from '../UI/EmptyState';
 import { useState } from 'react';
 
 interface PlaceListProps {
@@ -92,13 +93,19 @@ export function PlaceList({ onAddPlace, onEditPlace }: PlaceListProps) {
 
       <div className="flex-1 overflow-y-auto p-4">
         {places.length === 0 ? (
-          <div className="bg-gray-50 p-6 rounded-lg text-center">
-            <MapPin size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500 mb-2">場所が登録されていません</p>
-            <p className="text-gray-400 text-sm">
-              上のボタンから場所を追加してください
-            </p>
-          </div>
+          <EmptyState
+            icon={<MapPin size={48} />}
+            title="まだ場所が登録されていません"
+            description="行きたい場所を追加して、旅行計画の準備を始めましょう！"
+            actionLabel="最初の場所を追加"
+            onAction={onAddPlace}
+            suggestions={[
+              "地図を拡大すると美術館やカフェなどのPOIが表示されます",
+              "POIをクリックして「マイリストに追加」で簡単登録",
+              "「新しい場所を追加」ボタンで手動登録も可能",
+              "住所やキーワードで検索して追加することもできます"
+            ]}
+          />
         ) : (
           <div className="space-y-6">
             {/* 興味あり */}

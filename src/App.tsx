@@ -1,12 +1,14 @@
 import { MapComponent } from './components/Map/MapComponent';
 import { SidePanel } from './components/SidePanel/SidePanel';
+import { WelcomeGuide } from './components/Onboarding/WelcomeGuide';
 import { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, HelpCircle } from 'lucide-react';
 import { useStore } from './store/useStore';
 
 function App() {
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
-  const { initializeAuth, loadData, signInAnonymously } = useStore();
+  const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
+  const { initializeAuth, loadData, signInAnonymously, places, trips } = useStore();
 
   useEffect(() => {
     // データをロード
@@ -17,6 +19,18 @@ function App() {
     
     // Firebase自動ログイン（即座に実行）
     signInAnonymously().catch(console.error);
+
+    // 初回訪問判定
+    const hasVisited = localStorage.getItem('trip-app-visited');
+    if (!hasVisited) {
+      // データロード後に判定するためタイマーを使用
+      setTimeout(() => {
+        if (places.length === 0 && trips.length === 0) {
+          setShowWelcomeGuide(true);
+          localStorage.setItem('trip-app-visited', 'true');
+        }
+      }, 1000);
+    }
 
     // Service Worker 更新通知を監視
     if ('serviceWorker' in navigator) {
@@ -29,7 +43,7 @@ function App() {
         }
       });
     }
-  }, [initializeAuth, loadData, signInAnonymously]);
+  }, [initializeAuth, loadData, signInAnonymously, places.length, trips.length]);
 
   return (
     <div className="h-screen flex relative bg-gray-50 dark:bg-gray-900">
@@ -44,6 +58,16 @@ function App() {
           aria-label="Toggle menu"
         >
           {isSidePanelOpen ? <X size={24} className="text-gray-900 dark:text-gray-100" /> : <Menu size={24} className="text-gray-900 dark:text-gray-100" />}
+        </button>
+
+        {/* Help Button */}
+        <button
+          onClick={() => setShowWelcomeGuide(true)}
+          className="absolute top-4 left-4 z-20 bg-blue-600 text-white rounded-lg shadow-lg p-3 hover:bg-blue-700 transition-colors"
+          aria-label="Help guide"
+          title="使い方ガイド"
+        >
+          <HelpCircle size={20} />
         </button>
       </div>
       
@@ -63,6 +87,11 @@ function App() {
           className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-20"
           onClick={() => setIsSidePanelOpen(false)}
         />
+      )}
+
+      {/* Welcome Guide */}
+      {showWelcomeGuide && (
+        <WelcomeGuide onClose={() => setShowWelcomeGuide(false)} />
       )}
     </div>
   );

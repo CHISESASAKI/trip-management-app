@@ -138,10 +138,21 @@ export function PhotoUpload({ tripId, placeId, onClose }: PhotoUploadProps) {
         autoClassified: !!detectedLocation?.nearestPlace
       };
 
-      addPhoto(photoData);
+      await addPhoto(photoData);
 
-      // 成功メッセージ
-      alert('写真をアップロードしました！');
+      // より詳細な成功メッセージ
+      let successMessage = '📸 写真をアップロードしました！';
+      if (finalPlaceId) {
+        const placeName = places.find(p => p.id === finalPlaceId)?.name;
+        successMessage += `\n📍 場所: ${placeName}`;
+      }
+      if (detectedLocation?.nearestPlace) {
+        successMessage += '\n✨ 位置情報から自動分類されました';
+      } else if (finalLocation) {
+        successMessage += '\n📍 GPS座標が記録されました';
+      }
+      
+      alert(successMessage);
 
       // フォームをリセット
       setCaption('');
