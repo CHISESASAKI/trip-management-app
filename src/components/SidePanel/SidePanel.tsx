@@ -1,6 +1,6 @@
 import { useStore } from '../../store/useStore';
 import type { Place, ViewMode, Trip } from '../../types/base';
-import { MapPin, Calendar, Settings, Menu, X } from 'lucide-react';
+import { MapPin, Calendar, Settings, Menu, X, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { PlaceList } from '../PlaceManagement/PlaceList';
 import { PlaceForm } from '../PlaceManagement/PlaceForm';
@@ -9,6 +9,8 @@ import { DataManager } from '../DataManagement/DataManager';
 import { SearchFilter } from '../Search/SearchFilter';
 import { ExhibitionInfo } from '../Exhibition/ExhibitionInfo';
 import { TripExhibitionInfo } from '../Exhibition/TripExhibitionInfo';
+import { PlacePhotoGallery } from '../Photos/PlacePhotoGallery';
+import { TravelTimeline } from '../Timeline/TravelTimeline';
 
 interface SidePanelProps {
   className?: string;
@@ -28,6 +30,7 @@ export function SidePanel({ className = '' }: SidePanelProps) {
   const viewModes: { mode: ViewMode; label: string; icon: React.ReactNode }[] = [
     { mode: 'places', label: '場所管理', icon: <MapPin size={20} /> },
     { mode: 'planning', label: '旅行計画', icon: <Calendar size={20} /> },
+    { mode: 'timeline', label: '旅行履歴', icon: <Clock size={20} /> },
     { mode: 'records', label: 'データ管理', icon: <Settings size={20} /> },
   ];
 
@@ -150,6 +153,9 @@ export function SidePanel({ className = '' }: SidePanelProps) {
         {currentViewMode === 'planning' && (
           <TripList />
         )}
+        {currentViewMode === 'timeline' && (
+          <TravelTimeline />
+        )}
         {currentViewMode === 'records' && (
           <DataManager />
         )}
@@ -183,6 +189,11 @@ export function SidePanel({ className = '' }: SidePanelProps) {
                   />
                 </div>
               )}
+
+              {/* 場所の写真ギャラリー */}
+              <div className="mt-4">
+                <PlacePhotoGallery place={selectedPlace} />
+              </div>
             </div>
           )}
           {selectedTrip && (

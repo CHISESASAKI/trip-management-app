@@ -61,7 +61,10 @@ export interface Photo {
     lat: number;
     lng: number;
   };
+  autoClassified?: boolean;
+  classificationDistance?: number;
   createdAt: string;
+  updatedAt?: string;
 }
 
-export type ViewMode = 'places' | 'planning' | 'records';
+export type ViewMode = 'places' | 'planning' | 'records' | 'timeline';

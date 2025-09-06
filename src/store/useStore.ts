@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/localStorage';
 import { PlaceService, TripService, PhotoService } from '../services/firestore';
 import { onAuthStateChange, signInAnonymous, type AuthUser } from '../services/auth';
-import type { Place, Trip, ViewMode, DayPlan, Photo } from '../types/base';
+import { calculateDistance } from '../utils/exif';
+import type { Place, Trip, ViewMode, DayPlan, DayPlaceItem, Photo } from '../types/base';
 
 interface StoreActions {
   // Places
@@ -16,6 +17,9 @@ interface StoreActions {
   updateTrip: (id: string, updates: Partial<Trip>) => Promise<void>;
   deleteTrip: (id: string) => Promise<void>;
   setSelectedTrip: (trip: Trip | undefined) => void;
+  completeTrip: (tripId: string) => Promise<void>;
+  generateTripRecord: (tripId: string) => Promise<void>;
+  autoClassifyPhotosForTrip: (tripId: string) => Promise<void>;
   
   // Day Plans
   addDayPlan: (dayPlan: Omit<DayPlan, 'id'>) => void;
@@ -293,6 +297,156 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
   
   setSelectedTrip: (trip) => {
     set({ selectedTrip: trip });
+  },
+
+  completeTrip: async (tripId) => {
+    const state = get();
+    
+    // 旅行を完了状態に更新
+    await state.updateTrip(tripId, { status: 'completed' });
+    
+    // 旅行記録を自動生成
+    await state.generateTripRecord(tripId);
+    
+    // 写真を自動分類
+    await state.autoClassifyPhotosForTrip(tripId);
+  },
+
+  generateTripRecord: async (tripId) => {
+    const state = get();
+    const trip = state.trips.find(t => t.id === tripId);
+    
+    if (!trip) return;
+
+    // 旅行に含まれる場所のステータスを'visited'に更新
+    for (const placeId of trip.places) {
+      const place = state.places.find(p => p.id === placeId);
+      if (place && place.status !== 'visited') {
+        await state.updatePlace(placeId, { status: 'visited' });
+      }
+    }
+
+    // 基本的な日程データを自動生成（実際の訪問順序で）
+    const tripPlaces = state.places.filter(p => trip.places.includes(p.id));
+    const tripStart = new Date(trip.startDate);
+    const tripEnd = new Date(trip.endDate);
+    const tripDays = Math.ceil((tripEnd.getTime() - tripStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    // 既存の日程がない場合のみ自動生成
+    const existingDayPlans = state.dayPlans.filter(dp => dp.tripId === tripId);
+    if (existingDayPlans.length === 0 && tripPlaces.length > 0) {
+      const placesPerDay = Math.ceil(tripPlaces.length / tripDays);
+      
+      for (let day = 0; day < tripDays; day++) {
+        const dayDate = new Date(tripStart);
+        dayDate.setDate(tripStart.getDate() + day);
+        
+        const dayPlaces = tripPlaces.slice(day * placesPerDay, (day + 1) * placesPerDay);
+        
+        if (dayPlaces.length > 0) {
+          const dayPlaceItems: DayPlaceItem[] = dayPlaces.map((place, index) => {
+            const startHour = 9 + (index * 2); // 9時開始で2時間間隔
+            const endHour = startHour + 1.5;
+            
+            return {
+              placeId: place.id,
+              startTime: `${String(Math.floor(startHour)).padStart(2, '0')}:${String((startHour % 1) * 60).padStart(2, '0')}`,
+              endTime: `${String(Math.floor(endHour)).padStart(2, '0')}:${String((endHour % 1) * 60).padStart(2, '0')}`,
+              transportationToNext: index < dayPlaces.length - 1 ? 'walk' : undefined,
+              notes: `${place.name}の訪問記録（自動生成）`
+            };
+          });
+
+          state.addDayPlan({
+            tripId,
+            date: dayDate.toISOString().split('T')[0],
+            places: dayPlaceItems,
+            notes: `${trip.name} - ${day + 1}日目（自動生成）`
+          });
+        }
+      }
+    }
+  },
+
+  autoClassifyPhotosForTrip: async (tripId) => {
+    const state = get();
+    const trip = state.trips.find(t => t.id === tripId);
+    
+    if (!trip) return;
+
+    const tripPlaces = state.places.filter(p => trip.places.includes(p.id));
+    const tripStart = new Date(trip.startDate);
+    const tripEnd = new Date(trip.endDate);
+    
+    // 旅行期間中の写真を抽出（まだ旅行に関連付けられていないもの）
+    const candidatePhotos = state.photos.filter(photo => {
+      // 旅行IDが未設定または異なる旅行に設定されている
+      if (photo.tripId && photo.tripId === tripId) return false;
+      
+      // 撮影日が旅行期間内
+      const photoDate = new Date(photo.takenAt || photo.createdAt);
+      if (photoDate < tripStart || photoDate > tripEnd) return false;
+      
+      return true;
+    });
+
+    console.log(`Analyzing ${candidatePhotos.length} photos for trip ${trip.name}`);
+
+    // 各写真について最寄りの旅行場所を探す
+    for (const photo of candidatePhotos) {
+      if (!photo.location) continue;
+
+      let nearestPlace = null;
+      let minDistance = Infinity;
+      const maxDistance = 500; // 500m以内
+
+      for (const place of tripPlaces) {
+        const distance = calculateDistance(
+          photo.location.lat,
+          photo.location.lng,
+          place.lat,
+          place.lng
+        );
+
+        if (distance <= maxDistance && distance < minDistance) {
+          minDistance = distance;
+          nearestPlace = place;
+        }
+      }
+
+      // 最寄りの場所が見つかった場合、写真を自動分類
+      if (nearestPlace) {
+        console.log(`Auto-classifying photo to ${nearestPlace.name} (${Math.round(minDistance)}m away)`);
+        
+        // 写真を更新して旅行と場所に関連付け
+        const updatedPhoto = {
+          ...photo,
+          tripId,
+          placeId: nearestPlace.id,
+          autoClassified: true,
+          classificationDistance: Math.round(minDistance)
+        };
+
+        // 写真リストを更新
+        set((state) => ({
+          photos: state.photos.map(p => 
+            p.id === photo.id ? updatedPhoto : p
+          )
+        }));
+      }
+    }
+
+    // データを保存
+    state.saveData();
+    
+    // Firebase同期
+    if (state.useFirebase) {
+      try {
+        await state.syncWithFirebase();
+      } catch (error) {
+        console.error('Failed to sync auto-classified photos:', error);
+      }
+    }
   },
   
   // Day Plans

@@ -16,27 +16,31 @@ L.Icon.Default.mergeOptions({
 });
 
 // Custom marker icons
-const createCustomIcon = (color: string, status: Place['status']) => {
+const createCustomIcon = (color: string, status: Place['status'], isPastTrip?: boolean) => {
   let iconHtml = '';
+  const size = isPastTrip ? '16' : '20';
+  const iconSize = isPastTrip ? '10' : '12';
+  const borderStyle = isPastTrip ? `border: 3px solid ${color}; background-color: white;` : `border: 2px solid white; background-color: ${color};`;
+  const fillColor = isPastTrip ? color : 'white';
   
   switch (status) {
     case 'interested':
-      iconHtml = `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+      iconHtml = `<div style="${borderStyle} width: ${size}px; height: ${size}px; border-radius: 50%; display: flex; align-items: center; justify-content: center; ${isPastTrip ? 'opacity: 0.8;' : ''}">
+        <svg width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="${fillColor}">
           <path d="M12 2L13.09 8.26L22 9L17 14L18.18 22L12 19L5.82 22L7 14L2 9L10.91 8.26L12 2Z"/>
         </svg>
       </div>`;
       break;
     case 'planned':
-      iconHtml = `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+      iconHtml = `<div style="${borderStyle} width: ${size}px; height: ${size}px; border-radius: 50%; display: flex; align-items: center; justify-content: center; ${isPastTrip ? 'opacity: 0.8;' : ''}">
+        <svg width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="${fillColor}">
           <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V8H19V19ZM7 10H17V12H7V10ZM7 14H12V16H7V14Z"/>
         </svg>
       </div>`;
       break;
     case 'visited':
-      iconHtml = `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+      iconHtml = `<div style="${borderStyle} width: ${size}px; height: ${size}px; border-radius: 50%; display: flex; align-items: center; justify-content: center; ${isPastTrip ? 'opacity: 0.8;' : ''}">
+        <svg width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="${fillColor}">
           <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/>
         </svg>
       </div>`;
@@ -153,6 +157,8 @@ interface MapComponentProps {
 export function MapComponent({ className = '' }: MapComponentProps) {
   const { 
     places, 
+    trips,
+    photos,
     setSelectedPlace, 
     mapViewState,
     isDarkMode,
@@ -161,6 +167,7 @@ export function MapComponent({ className = '' }: MapComponentProps) {
   } = useStore();
 
   const [showPOIs, setShowPOIs] = useState(true);
+  const [showPastTrips, setShowPastTrips] = useState(true);
 
   // Load data on component mount
   useEffect(() => {
@@ -170,6 +177,43 @@ export function MapComponent({ className = '' }: MapComponentProps) {
   const handleMarkerClick = (place: Place) => {
     setSelectedPlace(place);
   };
+
+  // 過去の旅行から訪問済み場所を取得
+  const getPastTripPlaces = () => {
+    const completedTrips = trips.filter(trip => trip.status === 'completed');
+    const tripColors = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#EF4444', '#6366F1', '#84CC16', '#F97316'];
+    
+    const pastTripPlaces: Array<{
+      place: Place;
+      tripId: string;
+      tripName: string;
+      tripColor: string;
+      photos: any[];
+    }> = [];
+    
+    completedTrips.forEach((trip, index) => {
+      const tripColor = tripColors[index % tripColors.length];
+      const tripPlaces = places.filter(p => trip.places.includes(p.id) && p.status === 'visited');
+      
+      tripPlaces.forEach(place => {
+        const placePhotos = photos.filter(photo => 
+          photo.tripId === trip.id && photo.placeId === place.id
+        );
+        
+        pastTripPlaces.push({
+          place,
+          tripId: trip.id,
+          tripName: trip.name,
+          tripColor,
+          photos: placePhotos
+        });
+      });
+    });
+    
+    return pastTripPlaces;
+  };
+
+  const pastTripPlaces = getPastTripPlaces();
 
   return (
     <div className={`relative ${className}`}>
@@ -195,39 +239,111 @@ export function MapComponent({ className = '' }: MapComponentProps) {
         {/* Route Layer */}
         <RouteLayer />
         
-        {places.map((place) => (
+        {/* 通常の場所マーカー（過去旅行に含まれていない場所のみ） */}
+        {places
+          .filter(place => !pastTripPlaces.some(ptp => ptp.place.id === place.id))
+          .map((place) => (
+            <Marker
+              key={place.id}
+              position={[place.lat, place.lng]}
+              icon={createCustomIcon(getMarkerColor(place.status), place.status)}
+              eventHandlers={{
+                click: () => handleMarkerClick(place),
+              }}
+            >
+              <Popup maxWidth={300} className="custom-popup">
+                <div className="p-2 min-w-48 max-w-72">
+                  <h3 className="font-semibold text-base md:text-lg mb-1 leading-tight">{place.name}</h3>
+                  <p className="text-xs md:text-sm text-gray-600 mb-2 leading-relaxed">{place.address}</p>
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span 
+                      className="px-2 py-1 rounded-full text-xs font-medium"
+                      style={{ 
+                        backgroundColor: getMarkerColor(place.status) + '20',
+                        color: getMarkerColor(place.status)
+                      }}
+                    >
+                      {place.status === 'interested' ? '興味あり' : 
+                       place.status === 'planned' ? '計画中' : '訪問済み'}
+                    </span>
+                    <span className="text-xs text-gray-500 capitalize">{place.category}</span>
+                  </div>
+                  {place.notes && (
+                    <p className="text-xs md:text-sm text-gray-700 mt-2 leading-relaxed">{place.notes}</p>
+                  )}
+                  {place.openingHours && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      営業時間: {place.openingHours}
+                    </p>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+
+        {/* 過去旅行の場所マーカー */}
+        {showPastTrips && pastTripPlaces.map((tripPlace) => (
           <Marker
-            key={place.id}
-            position={[place.lat, place.lng]}
-            icon={createCustomIcon(getMarkerColor(place.status), place.status)}
+            key={`trip-${tripPlace.tripId}-${tripPlace.place.id}`}
+            position={[tripPlace.place.lat, tripPlace.place.lng]}
+            icon={createCustomIcon(tripPlace.tripColor, tripPlace.place.status, true)}
             eventHandlers={{
-              click: () => handleMarkerClick(place),
+              click: () => handleMarkerClick(tripPlace.place),
             }}
           >
-            <Popup maxWidth={300} className="custom-popup">
-              <div className="p-2 min-w-48 max-w-72">
-                <h3 className="font-semibold text-base md:text-lg mb-1 leading-tight">{place.name}</h3>
-                <p className="text-xs md:text-sm text-gray-600 mb-2 leading-relaxed">{place.address}</p>
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <Popup maxWidth={350} className="custom-popup">
+              <div className="p-3 min-w-52 max-w-80">
+                <div className="flex items-center gap-2 mb-2">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: tripPlace.tripColor }}
+                  ></div>
+                  <h3 className="font-semibold text-base md:text-lg leading-tight">{tripPlace.place.name}</h3>
+                </div>
+                <p className="text-xs md:text-sm text-gray-600 mb-2">📍 {tripPlace.place.address}</p>
+                
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
                   <span 
                     className="px-2 py-1 rounded-full text-xs font-medium"
                     style={{ 
-                      backgroundColor: getMarkerColor(place.status) + '20',
-                      color: getMarkerColor(place.status)
+                      backgroundColor: tripPlace.tripColor + '20',
+                      color: tripPlace.tripColor
                     }}
                   >
-                    {place.status === 'interested' ? '興味あり' : 
-                     place.status === 'planned' ? '計画中' : '訪問済み'}
+                    🧳 {tripPlace.tripName}
                   </span>
-                  <span className="text-xs text-gray-500 capitalize">{place.category}</span>
+                  <span className="text-xs text-gray-500 capitalize">{tripPlace.place.category}</span>
                 </div>
-                {place.notes && (
-                  <p className="text-xs md:text-sm text-gray-700 mt-2 leading-relaxed">{place.notes}</p>
+
+                {/* 写真一覧 */}
+                {tripPlace.photos.length > 0 && (
+                  <div className="mb-3">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">📸 写真 ({tripPlace.photos.length}枚)</h4>
+                    <div className="grid grid-cols-3 gap-1 max-h-24 overflow-hidden">
+                      {tripPlace.photos.slice(0, 6).map((photo, index) => (
+                        <div key={photo.id || index} className="aspect-square bg-gray-100 rounded overflow-hidden">
+                          {photo.url ? (
+                            <img 
+                              src={photo.url} 
+                              alt={`${tripPlace.place.name}の写真`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                              <span className="text-xs text-gray-500">📷</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {tripPlace.photos.length > 6 && (
+                      <p className="text-xs text-gray-500 mt-1">他 {tripPlace.photos.length - 6}枚</p>
+                    )}
+                  </div>
                 )}
-                {place.openingHours && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    営業時間: {place.openingHours}
-                  </p>
+
+                {tripPlace.place.notes && (
+                  <p className="text-xs md:text-sm text-gray-700 mt-2 leading-relaxed">{tripPlace.place.notes}</p>
                 )}
               </div>
             </Popup>
@@ -246,7 +362,19 @@ export function MapComponent({ className = '' }: MapComponentProps) {
           }`}
         >
           <span className="hidden md:inline">{showPOIs ? 'POI非表示' : 'POI表示'}</span>
-          <span className="md:hidden">{showPOIs ? 'POI' : 'POI'}</span>
+          <span className="md:hidden">POI</span>
+        </button>
+        
+        <button
+          onClick={() => setShowPastTrips(!showPastTrips)}
+          className={`px-3 py-2 rounded-lg shadow-lg text-xs md:text-sm font-medium transition-colors ${
+            showPastTrips 
+              ? 'bg-purple-600 text-white hover:bg-purple-700' 
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+          }`}
+        >
+          <span className="hidden md:inline">{showPastTrips ? '過去旅行非表示' : '過去旅行表示'}</span>
+          <span className="md:hidden">🧳</span>
         </button>
         
         <button
@@ -281,6 +409,32 @@ export function MapComponent({ className = '' }: MapComponentProps) {
             <span>訪問済み</span>
           </div>
         </div>
+
+        {showPastTrips && pastTripPlaces.length > 0 && (
+          <div className="space-y-1 border-t pt-2">
+            <h5 className="text-xs font-medium text-gray-600">過去の旅行</h5>
+            {pastTripPlaces
+              .reduce((unique, tripPlace) => {
+                if (!unique.find(u => u.tripName === tripPlace.tripName)) {
+                  unique.push(tripPlace);
+                }
+                return unique;
+              }, [] as typeof pastTripPlaces)
+              .slice(0, 4)
+              .map((tripPlace, _index) => (
+                <div key={tripPlace.tripId} className="flex items-center gap-2 text-xs">
+                  <div 
+                    className="w-2 h-2 rounded-full border border-gray-400"
+                    style={{ borderColor: tripPlace.tripColor, borderWidth: 2 }}
+                  ></div>
+                  <span>{tripPlace.tripName}</span>
+                </div>
+              ))}
+            <div className="text-xs text-gray-500 mt-1">
+              🧳 写真付きで表示
+            </div>
+          </div>
+        )}
 
         {showPOIs && (
           <div className="space-y-1 border-t pt-2">

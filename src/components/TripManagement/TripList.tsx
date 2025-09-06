@@ -1,9 +1,10 @@
 import { useStore } from '../../store/useStore';
 import type { Trip } from '../../types/base';
-import { Calendar, MapPin, Edit3, Trash2, DollarSign, Clock, Camera, Plus } from 'lucide-react';
+import { Calendar, MapPin, Edit3, Trash2, DollarSign, Clock, Camera, Plus, FileText } from 'lucide-react';
 import { useState } from 'react';
 import { TripForm } from './TripForm';
 import { PhotoUpload } from '../Photos/PhotoUpload';
+import { TripRecordEditor } from '../TripRecord/TripRecordEditor';
 
 export function TripList() {
   const { trips, deleteTrip, setSelectedTrip } = useStore();
@@ -11,6 +12,8 @@ export function TripList() {
   const [editingTrip, setEditingTrip] = useState<Trip | undefined>();
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
   const [photoUploadTripId, setPhotoUploadTripId] = useState<string | undefined>();
+  const [showRecordEditor, setShowRecordEditor] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<Trip | undefined>();
 
   const handleDeleteTrip = (trip: Trip) => {
     if (window.confirm(`「${trip.name}」を削除しますか？`)) {
@@ -45,6 +48,16 @@ export function TripList() {
   const handleClosePhotoUpload = () => {
     setShowPhotoUpload(false);
     setPhotoUploadTripId(undefined);
+  };
+
+  const handleEditRecord = (trip: Trip) => {
+    setEditingRecord(trip);
+    setShowRecordEditor(true);
+  };
+
+  const handleCloseRecordEditor = () => {
+    setShowRecordEditor(false);
+    setEditingRecord(undefined);
   };
 
   const getStatusColor = (status: Trip['status']) => {
@@ -137,6 +150,7 @@ export function TripList() {
                       onDelete={handleDeleteTrip}
                       onClick={handleTripClick}
                       onPhotoUpload={handlePhotoUpload}
+                      onEditRecord={undefined}
                       getStatusColor={getStatusColor}
                       getStatusText={getStatusText}
                       formatDate={formatDate}
@@ -163,6 +177,7 @@ export function TripList() {
                       onDelete={handleDeleteTrip}
                       onClick={handleTripClick}
                       onPhotoUpload={handlePhotoUpload}
+                      onEditRecord={undefined}
                       getStatusColor={getStatusColor}
                       getStatusText={getStatusText}
                       formatDate={formatDate}
@@ -189,6 +204,7 @@ export function TripList() {
                       onDelete={handleDeleteTrip}
                       onClick={handleTripClick}
                       onPhotoUpload={handlePhotoUpload}
+                      onEditRecord={handleEditRecord}
                       getStatusColor={getStatusColor}
                       getStatusText={getStatusText}
                       formatDate={formatDate}
@@ -221,6 +237,14 @@ export function TripList() {
           </div>
         </div>
       )}
+
+      {/* Trip Record Editor Modal */}
+      {showRecordEditor && editingRecord && (
+        <TripRecordEditor
+          trip={editingRecord}
+          onClose={handleCloseRecordEditor}
+        />
+      )}
     </div>
   );
 }
@@ -231,6 +255,7 @@ interface TripCardProps {
   onDelete: (trip: Trip) => void;
   onClick: (trip: Trip) => void;
   onPhotoUpload: (trip: Trip) => void;
+  onEditRecord?: (trip: Trip) => void;
   getStatusColor: (status: Trip['status']) => string;
   getStatusText: (status: Trip['status']) => string;
   formatDate: (date: string) => string;
@@ -243,6 +268,7 @@ function TripCard({
   onDelete,
   onClick,
   onPhotoUpload,
+  onEditRecord,
   getStatusColor,
   getStatusText,
   formatDate,
@@ -310,6 +336,18 @@ function TripCard({
         </div>
         
         <div className="flex items-center gap-1 ml-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+          {onEditRecord && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditRecord(trip);
+              }}
+              className="p-1.5 md:p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+              aria-label="記録編集"
+            >
+              <FileText size={14} className="md:w-4 md:h-4" />
+            </button>
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();
