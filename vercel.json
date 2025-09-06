@@ -16,6 +16,14 @@
       }
     },
     {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
+    },
+    {
+      "src": "/icon-(.*).png",
+      "dest": "/icon-$1.png"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
