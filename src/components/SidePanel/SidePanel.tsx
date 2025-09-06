@@ -7,6 +7,8 @@ import { PlaceForm } from '../PlaceManagement/PlaceForm';
 import { TripList } from '../TripManagement/TripList';
 import { DataManager } from '../DataManagement/DataManager';
 import { SearchFilter } from '../Search/SearchFilter';
+import { ExhibitionInfo } from '../Exhibition/ExhibitionInfo';
+import { TripExhibitionInfo } from '../Exhibition/TripExhibitionInfo';
 
 interface SidePanelProps {
   className?: string;
@@ -155,7 +157,7 @@ export function SidePanel({ className = '' }: SidePanelProps) {
 
       {/* Selected Place/Trip Details */}
       {(selectedPlace || selectedTrip) && (
-        <div className="border-t bg-gray-50 p-4">
+        <div className="border-t bg-gray-50 p-4 space-y-4 max-h-80 overflow-y-auto">
           {selectedPlace && (
             <div>
               <h3 className="font-semibold text-lg mb-2">{selectedPlace.name}</h3>
@@ -170,6 +172,17 @@ export function SidePanel({ className = '' }: SidePanelProps) {
               {selectedPlace.notes && (
                 <p className="text-sm text-gray-700 mt-2">{selectedPlace.notes}</p>
               )}
+              
+              {/* 展示・イベント情報（美術館・博物館の場合のみ） */}
+              {(selectedPlace.category === 'museum' || selectedPlace.category === 'gallery') && (
+                <div className="mt-4">
+                  <ExhibitionInfo 
+                    place={selectedPlace}
+                    tripStartDate={selectedTrip?.startDate}
+                    tripEndDate={selectedTrip?.endDate}
+                  />
+                </div>
+              )}
             </div>
           )}
           {selectedTrip && (
@@ -182,6 +195,11 @@ export function SidePanel({ className = '' }: SidePanelProps) {
                 {selectedTrip.status === 'planned' ? '計画中' :
                  selectedTrip.status === 'in_progress' ? '実行中' : '完了'}
               </span>
+              
+              {/* 旅行期間中の展示情報 */}
+              <div className="mt-4">
+                <TripExhibitionInfo trip={selectedTrip} />
+              </div>
             </div>
           )}
         </div>

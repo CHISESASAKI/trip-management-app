@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useStore } from '../../store/useStore';
-import { Camera, Upload, X } from 'lucide-react';
+import { Camera, Upload, X, MapPin, Clock } from 'lucide-react';
+import { extractEXIFData, findNearestPlace } from '../../utils/exif';
 
 interface PhotoUploadProps {
   tripId?: string;
@@ -13,12 +14,23 @@ export function PhotoUpload({ tripId, placeId, onClose }: PhotoUploadProps) {
   const [caption, setCaption] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [detectedLocation, setDetectedLocation] = useState<{
+    lat: number;
+    lng: number;
+    nearestPlace?: { place: any; distance: number };
+    timestamp?: Date;
+  } | null>(null);
+  const [locationAnalysis, setLocationAnalysis] = useState<{
+    isAnalyzing: boolean;
+    hasLocation: boolean;
+    suggestion?: string;
+  }>({ isAnalyzing: false, hasLocation: false });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const trip = tripId ? trips.find(t => t.id === tripId) : undefined;
   const place = placeId ? places.find(p => p.id === placeId) : undefined;
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -34,12 +46,56 @@ export function PhotoUpload({ tripId, placeId, onClose }: PhotoUploadProps) {
       return;
     }
 
+    setLocationAnalysis({ isAnalyzing: true, hasLocation: false });
+
     // プレビュー表示
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreviewUrl(e.target?.result as string);
     };
     reader.readAsDataURL(file);
+
+    // EXIF位置情報の抽出と分析
+    try {
+      const exifData = await extractEXIFData(file);
+      
+      if (exifData.location) {
+        const nearestPlace = findNearestPlace(exifData.location, places, 200);
+        
+        setDetectedLocation({
+          lat: exifData.location.lat,
+          lng: exifData.location.lng,
+          nearestPlace: nearestPlace || undefined,
+          timestamp: exifData.timestamp
+        });
+
+        let suggestion = '';
+        if (nearestPlace) {
+          suggestion = `📍 ${nearestPlace.place.name}の近くで撮影 (約${Math.round(nearestPlace.distance)}m)`;
+        } else {
+          suggestion = '📍 位置情報が検出されましたが、登録済みの場所に近いものはありません';
+        }
+
+        setLocationAnalysis({
+          isAnalyzing: false,
+          hasLocation: true,
+          suggestion
+        });
+      } else {
+        setLocationAnalysis({
+          isAnalyzing: false,
+          hasLocation: false,
+          suggestion: '📍 この写真に位置情報は含まれていません'
+        });
+      }
+    } catch (error) {
+      console.error('EXIF analysis error:', error);
+      setLocationAnalysis({
+        isAnalyzing: false,
+        hasLocation: false,
+        suggestion: '📍 位置情報の分析に失敗しました'
+      });
+    }
   };
 
   const handleUpload = async () => {
@@ -51,14 +107,35 @@ export function PhotoUpload({ tripId, placeId, onClose }: PhotoUploadProps) {
     setIsUploading(true);
 
     try {
+      // 位置情報の決定（優先順位: 1.検出された最寄り場所, 2.手動選択された場所, 3.検出されたGPS座標）
+      let finalPlaceId = placeId;
+      let finalLocation = place ? { lat: place.lat, lng: place.lng } : undefined;
+
+      // EXIF位置情報で最寄りの場所が見つかった場合は自動分類
+      if (detectedLocation?.nearestPlace && !placeId) {
+        finalPlaceId = detectedLocation.nearestPlace.place.id;
+        finalLocation = {
+          lat: detectedLocation.nearestPlace.place.lat,
+          lng: detectedLocation.nearestPlace.place.lng
+        };
+      } else if (detectedLocation && !finalLocation) {
+        // 最寄りの場所は見つからなかったが、GPS座標はある場合
+        finalLocation = {
+          lat: detectedLocation.lat,
+          lng: detectedLocation.lng
+        };
+      }
+
       // Base64データとして保存（本来はクラウドストレージに保存すべき）
       const photoData = {
         tripId,
-        placeId,
+        placeId: finalPlaceId,
         url: previewUrl, // Base64 URL
         caption: caption.trim() || undefined,
-        takenAt: new Date().toISOString(),
-        location: place ? { lat: place.lat, lng: place.lng } : undefined
+        takenAt: detectedLocation?.timestamp?.toISOString() || new Date().toISOString(),
+        location: finalLocation,
+        // EXIF情報由来かどうかのフラグ
+        autoClassified: !!detectedLocation?.nearestPlace
       };
 
       addPhoto(photoData);
@@ -86,6 +163,8 @@ export function PhotoUpload({ tripId, placeId, onClose }: PhotoUploadProps) {
 
   const clearPreview = () => {
     setPreviewUrl(null);
+    setDetectedLocation(null);
+    setLocationAnalysis({ isAnalyzing: false, hasLocation: false });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -147,18 +226,63 @@ export function PhotoUpload({ tripId, placeId, onClose }: PhotoUploadProps) {
             </label>
           </div>
         ) : (
-          <div className="relative">
-            <img
-              src={previewUrl}
-              alt="Preview"
-              className="w-full h-64 object-cover rounded-lg"
-            />
-            <button
-              onClick={clearPreview}
-              className="absolute top-2 right-2 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-opacity"
-            >
-              <X size={16} />
-            </button>
+          <div className="space-y-3">
+            <div className="relative">
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="w-full h-64 object-cover rounded-lg"
+              />
+              <button
+                onClick={clearPreview}
+                className="absolute top-2 right-2 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70 transition-opacity"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* 位置情報分析結果 */}
+            {locationAnalysis.isAnalyzing ? (
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+                  <MapPin size={16} />
+                  <span>位置情報を分析中...</span>
+                </div>
+              </div>
+            ) : locationAnalysis.suggestion && (
+              <div className={`p-3 border rounded-lg ${
+                locationAnalysis.hasLocation
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700'
+                  : 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-700'
+              }`}>
+                <div className={`flex items-start gap-2 text-sm ${
+                  locationAnalysis.hasLocation
+                    ? 'text-green-800 dark:text-green-300'
+                    : 'text-gray-700 dark:text-gray-300'
+                }`}>
+                  <MapPin size={16} className="flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p>{locationAnalysis.suggestion}</p>
+                    
+                    {detectedLocation?.timestamp && (
+                      <div className="flex items-center gap-1 mt-1 text-xs opacity-75">
+                        <Clock size={12} />
+                        <span>撮影日時: {detectedLocation.timestamp.toLocaleString('ja-JP')}</span>
+                      </div>
+                    )}
+                    
+                    {detectedLocation?.nearestPlace && (
+                      <div className="mt-2 text-xs">
+                        <span className="px-2 py-1 bg-green-200 dark:bg-green-800 rounded-full">
+                          自動分類: {detectedLocation.nearestPlace.place.name}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

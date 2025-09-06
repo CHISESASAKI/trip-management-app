@@ -4,7 +4,7 @@ export interface Place {
   address: string;
   lat: number;
   lng: number;
-  category: 'museum' | 'gallery' | 'landmark' | 'restaurant' | 'other';
+  category: 'museum' | 'gallery' | 'landmark' | 'restaurant' | 'cafe' | 'other';
   status: 'interested' | 'planned' | 'visited';
   notes?: string;
   openingHours?: string;
