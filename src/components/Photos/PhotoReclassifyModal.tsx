@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../../store/useStore';
-import { X, MapPin, Calendar, Camera, Save } from 'lucide-react';
+import { X, MapPin, Calendar, Camera, Save, Navigation, Search } from 'lucide-react';
 import type { Photo, Place } from '../../types/base';
 
 interface PhotoReclassifyModalProps {
@@ -20,6 +20,12 @@ export function PhotoReclassifyModal({ photo, onClose, onSuccess }: PhotoReclass
   const [selectedTripId, setSelectedTripId] = useState(photo.tripId || '');
   const [caption, setCaption] = useState(photo.caption || '');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showLocationInput, setShowLocationInput] = useState(false);
+  const [manualLocation, setManualLocation] = useState({
+    lat: photo.location?.lat || '',
+    lng: photo.location?.lng || ''
+  });
+  const [locationSearch, setLocationSearch] = useState('');
 
   // 現在の分類情報
   const currentPlace = photo.placeId ? places.find(p => p.id === photo.placeId) : undefined;
@@ -76,6 +82,24 @@ export function PhotoReclassifyModal({ photo, onClose, onSuccess }: PhotoReclass
     setIsUpdating(true);
     
     try {
+      // 手動位置情報の処理
+      let locationData = photo.location;
+      if (manualLocation.lat && manualLocation.lng) {
+        locationData = {
+          lat: typeof manualLocation.lat === 'string' ? parseFloat(manualLocation.lat) : manualLocation.lat,
+          lng: typeof manualLocation.lng === 'string' ? parseFloat(manualLocation.lng) : manualLocation.lng
+        };
+      } else if (selectedPlaceId && !photo.location) {
+        // 場所が選択されていて、写真に位置情報がない場合、場所の位置情報を使用
+        const selectedPlace = places.find(p => p.id === selectedPlaceId);
+        if (selectedPlace) {
+          locationData = {
+            lat: selectedPlace.lat,
+            lng: selectedPlace.lng
+          };
+        }
+      }
+
       // 写真データを更新
       const updatedPhotos = photos.map(p => {
         if (p.id === photo.id) {
@@ -84,6 +108,7 @@ export function PhotoReclassifyModal({ photo, onClose, onSuccess }: PhotoReclass
             placeId: selectedPlaceId || undefined,
             tripId: selectedTripId || undefined,
             caption: caption.trim() || undefined,
+            location: locationData,
             autoClassified: false, // 手動で再分類したのでfalseにする
             updatedAt: new Date().toISOString()
           };
@@ -140,6 +165,27 @@ export function PhotoReclassifyModal({ photo, onClose, onSuccess }: PhotoReclass
     } else {
       return `約${(place.distance / 1000).toFixed(1)}km`;
     }
+  };
+
+  const handleLocationFromPlace = (placeId: string) => {
+    const place = places.find(p => p.id === placeId);
+    if (place) {
+      setManualLocation({
+        lat: place.lat.toString(),
+        lng: place.lng.toString()
+      });
+    }
+  };
+
+  const handleLocationSearch = () => {
+    if (!locationSearch) return;
+    
+    const filteredPlaces = places.filter(place =>
+      place.name.toLowerCase().includes(locationSearch.toLowerCase()) ||
+      place.address.toLowerCase().includes(locationSearch.toLowerCase())
+    );
+    
+    return filteredPlaces.slice(0, 5);
   };
 
   return (
@@ -274,6 +320,118 @@ export function PhotoReclassifyModal({ photo, onClose, onSuccess }: PhotoReclass
                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   📅 {selectedTrip.startDate} - {selectedTrip.endDate}
                 </p>
+              )}
+            </div>
+
+            {/* 位置情報編集 */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  📍 位置情報
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowLocationInput(!showLocationInput)}
+                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  {photo.location ? '位置情報を編集' : '位置情報を追加'}
+                </button>
+              </div>
+              
+              {photo.location && !showLocationInput && (
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm">
+                  <div className="flex items-center gap-2">
+                    <Navigation size={14} className="text-green-600" />
+                    <span>緯度: {photo.location.lat.toFixed(6)}</span>
+                    <span>経度: {photo.location.lng.toFixed(6)}</span>
+                  </div>
+                </div>
+              )}
+
+              {(!photo.location || showLocationInput) && (
+                <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  {/* 場所から位置情報を取得 */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                      既存の場所から位置情報を取得
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="場所名で検索..."
+                        value={locationSearch}
+                        onChange={(e) => setLocationSearch(e.target.value)}
+                        className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const results = handleLocationSearch();
+                          if (results && results.length > 0) {
+                            handleLocationFromPlace(results[0].id);
+                            setLocationSearch('');
+                          }
+                        }}
+                        className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <Search size={14} />
+                      </button>
+                    </div>
+                    
+                    {locationSearch && (
+                      <div className="mt-2 max-h-32 overflow-y-auto">
+                        {handleLocationSearch()?.map(place => (
+                          <button
+                            key={place.id}
+                            type="button"
+                            onClick={() => {
+                              handleLocationFromPlace(place.id);
+                              setLocationSearch('');
+                            }}
+                            className="w-full text-left p-2 text-sm hover:bg-gray-200 dark:hover:bg-gray-600 rounded border-b border-gray-200 dark:border-gray-600"
+                          >
+                            <div className="font-medium">{place.name}</div>
+                            <div className="text-gray-600 dark:text-gray-400 text-xs">{place.address}</div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 手動入力 */}
+                  <div className="border-t border-gray-300 dark:border-gray-600 pt-3">
+                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                      手動で座標を入力
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">緯度</label>
+                        <input
+                          type="number"
+                          step="0.000001"
+                          placeholder="35.6762"
+                          value={manualLocation.lat}
+                          onChange={(e) => setManualLocation(prev => ({ ...prev, lat: e.target.value }))}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">経度</label>
+                        <input
+                          type="number"
+                          step="0.000001"
+                          placeholder="139.6503"
+                          value={manualLocation.lng}
+                          onChange={(e) => setManualLocation(prev => ({ ...prev, lng: e.target.value }))}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      💡 Google Mapsで場所を右クリック→座標をコピーできます
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
 
