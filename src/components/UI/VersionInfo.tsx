@@ -59,10 +59,10 @@ export function VersionInfo({ className = '' }: VersionInfoProps) {
   return (
     <button
       onClick={() => setShowDetail(true)}
-      className={`fixed bottom-4 left-4 z-[1002] bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-xl hover:bg-blue-700 transition-all duration-200 hover:scale-110 ${className}`}
+      className={`fixed bottom-4 left-4 z-[1002] bg-blue-600 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center shadow-xl hover:bg-blue-700 transition-all duration-200 hover:scale-110 ${className}`}
       title={`バージョン ${version} - クリックで詳細`}
     >
-      <Info size={18} />
+      <Info size={16} className="md:w-[18px] md:h-[18px]" />
     </button>
   );
 }
