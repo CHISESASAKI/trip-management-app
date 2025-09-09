@@ -8,9 +8,9 @@ interface VersionInfoProps {
 export function VersionInfo({ className = '' }: VersionInfoProps) {
   const [showDetail, setShowDetail] = useState(false);
   
-  const version = "v2.2.0";
+  const version = "v2.3.0";
   const buildDate = "2025-09-09";
-  const buildTime = "19:15:00";
+  const buildTime = "19:30:00";
 
   if (showDetail) {
     return (
@@ -44,10 +44,10 @@ export function VersionInfo({ className = '' }: VersionInfoProps) {
                 <span>更新内容:</span>
               </div>
               <div className="mt-1 text-xs text-gray-500">
-                • モバイル検索ボックス修正<br/>
-                • バージョンボタン表示修正<br/>
-                • 地図タップ機能修正<br/>
-                • UI表示問題対応
+                • モバイル位置重複問題修正<br/>
+                • 検索ボックス配置調整<br/>
+                • バージョンボタン右下移動<br/>
+                • UI表示強制スタイル適用
               </div>
             </div>
           </div>
@@ -59,7 +59,7 @@ export function VersionInfo({ className = '' }: VersionInfoProps) {
   return (
     <button
       onClick={() => setShowDetail(true)}
-      className={`fixed bottom-4 left-4 z-[1005] bg-blue-600 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center shadow-xl hover:bg-blue-700 transition-all duration-200 hover:scale-110 ${className}`}
+      className={`fixed bottom-4 right-4 z-[1005] bg-blue-600 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center shadow-xl hover:bg-blue-700 transition-all duration-200 hover:scale-110 ${className}`}
       style={{ display: 'flex !important' }}
       title={`バージョン ${version} - クリックで詳細`}
     >
