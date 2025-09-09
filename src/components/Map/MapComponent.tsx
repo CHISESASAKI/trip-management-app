@@ -262,8 +262,6 @@ export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(funct
         zoomControl={false}
         attributionControl={false}
         preferCanvas={true}
-        updateWhenZooming={false}
-        updateWhenIdle={true}
       >
         {/* パフォーマンス最適化されたタイルプロバイダー */}
         <TileLayer
@@ -272,9 +270,6 @@ export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(funct
           maxZoom={18}
           minZoom={5}
           keepBuffer={4}
-          updateWhenIdle={true}
-          updateWhenZooming={false}
-          loading="eager"
           eventHandlers={{
             loading: () => setIsMapLoading(true),
             load: () => setIsMapLoading(false),
