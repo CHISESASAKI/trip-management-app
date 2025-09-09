@@ -75,11 +75,25 @@ function App() {
           )}
         </button>
 
-        {/* Help Button */}
+        {/* Help Button - Debug Mode */}
+        <div 
+          className="fixed top-4 left-4 bg-red-500 text-white p-2 text-xs"
+          style={{ zIndex: 2000 }}
+        >
+          DEBUG: Mobile={window.innerWidth < 768 ? 'YES' : 'NO'}
+        </div>
+        
         <button
           onClick={() => setShowWelcomeGuide(true)}
-          className="fixed top-4 left-4 bg-blue-600 text-white rounded-lg shadow-xl p-3 hover:bg-blue-700 transition-colors"
-          style={{ zIndex: 1050, display: 'flex !important' }}
+          className="fixed top-12 left-4 bg-blue-600 text-white rounded-lg shadow-xl p-3 hover:bg-blue-700 transition-colors"
+          style={{ 
+            zIndex: 1050, 
+            display: 'flex',
+            position: 'fixed',
+            background: 'blue',
+            width: '48px',
+            height: '48px'
+          } as React.CSSProperties}
           aria-label="Help guide"
           title="使い方ガイド"
         >

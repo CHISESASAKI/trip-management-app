@@ -268,7 +268,25 @@ export function ModernSearchBox({ mapRef }: ModernSearchBoxProps) {
   };
 
   return (
-    <div className="fixed top-4 left-4 right-4 md:left-4 md:right-96 max-w-md z-[1040]" style={{ display: 'block !important', marginLeft: '60px' }}>
+    <>
+      {/* Debug Info */}
+      <div 
+        className="fixed top-20 left-4 bg-green-500 text-white p-2 text-xs"
+        style={{ zIndex: 2000 }}
+      >
+        SEARCH: Rendered
+      </div>
+      
+      <div 
+        className="fixed top-4 left-4 right-4 md:left-4 md:right-96 max-w-md z-[1040]" 
+        style={{ 
+          display: 'block', 
+          marginLeft: '60px',
+          background: 'white',
+          border: '2px solid red',
+          minHeight: '50px'
+        } as React.CSSProperties}
+      >
       <div ref={resultsRef} className="relative">
         {/* Modern Search Input */}
         <div className="relative bg-white rounded-xl shadow-lg border border-gray-200 backdrop-blur-sm">
@@ -377,5 +395,6 @@ export function ModernSearchBox({ mapRef }: ModernSearchBoxProps) {
         )}
       </div>
     </div>
+    </>
   );
 }

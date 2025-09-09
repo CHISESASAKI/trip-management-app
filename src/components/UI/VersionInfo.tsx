@@ -8,9 +8,9 @@ interface VersionInfoProps {
 export function VersionInfo({ className = '' }: VersionInfoProps) {
   const [showDetail, setShowDetail] = useState(false);
   
-  const version = "v2.4.0";
+  const version = "v2.5.0-DEBUG";
   const buildDate = "2025-09-09";
-  const buildTime = "19:45:00";
+  const buildTime = "20:00:00";
 
   if (showDetail) {
     return (
@@ -57,13 +57,28 @@ export function VersionInfo({ className = '' }: VersionInfoProps) {
   }
 
   return (
-    <button
-      onClick={() => setShowDetail(true)}
-      className={`fixed bottom-4 right-4 z-[1040] bg-blue-600 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center shadow-xl hover:bg-blue-700 transition-all duration-200 hover:scale-110 ${className}`}
-      style={{ display: 'flex !important' }}
-      title={`バージョン ${version} - クリックで詳細`}
-    >
-      <Info size={16} className="md:w-[18px] md:h-[18px]" />
-    </button>
+    <>
+      {/* Debug Info */}
+      <div 
+        className="fixed bottom-20 right-4 bg-yellow-500 text-black p-2 text-xs"
+        style={{ zIndex: 2000 }}
+      >
+        VERSION: Rendered
+      </div>
+      
+      <button
+        onClick={() => setShowDetail(true)}
+        className={`fixed bottom-4 right-4 z-[1040] bg-blue-600 text-white rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center shadow-xl hover:bg-blue-700 transition-all duration-200 hover:scale-110 ${className}`}
+        style={{ 
+          display: 'flex',
+          position: 'fixed',
+          background: 'blue',
+          border: '3px solid red'
+        } as React.CSSProperties}
+        title={`バージョン ${version} - クリックで詳細`}
+      >
+        <Info size={16} className="md:w-[18px] md:h-[18px]" />
+      </button>
+    </>
   );
 }
