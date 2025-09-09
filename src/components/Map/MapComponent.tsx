@@ -5,6 +5,7 @@ import L from 'leaflet';
 import { useEffect, useState } from 'react';
 import { POILayer } from './POILayer';
 import { RouteLayer } from './RouteLayer';
+import { MapSearchBox } from './MapSearchBox';
 import { Moon, Sun } from 'lucide-react';
 
 // Fix for default markers
@@ -70,6 +71,14 @@ function MapClickHandler() {
   
   useMapEvents({
     click: (e) => {
+      // Prevent event if it's on a marker or popup
+      if (e.originalEvent && e.originalEvent.target) {
+        const target = e.originalEvent.target as HTMLElement;
+        if (target.closest('.leaflet-marker-pane') || target.closest('.leaflet-popup')) {
+          return;
+        }
+      }
+
       const { lat, lng } = e.latlng;
       
       // Clear selected place first
@@ -81,9 +90,12 @@ function MapClickHandler() {
         ? '📍 この場所に追加しますか？'
         : `この場所（緯度: ${lat.toFixed(6)}, 経度: ${lng.toFixed(6)}）に場所を追加しますか？`;
       
-      if (window.confirm(message)) {
-        searchLocationInfo(lat, lng, addPlace);
-      }
+      // Use setTimeout to ensure UI is responsive
+      setTimeout(() => {
+        if (window.confirm(message)) {
+          searchLocationInfo(lat, lng, addPlace);
+        }
+      }, 100);
     },
   });
   
@@ -225,13 +237,21 @@ export function MapComponent({ className = '' }: MapComponentProps) {
           // Map event handlers are set up in POILayer and MapClickHandler
         }}
       >
-        {/* より見やすいタイルプロバイダーを使用 */}
+        {/* パフォーマンス最適化されたタイルプロバイダー */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
+          minZoom={3}
+          keepBuffer={2}
+          updateWhenIdle={true}
+          updateWhenZooming={false}
         />
         
         <MapClickHandler />
+        
+        {/* Map Search Box */}
+        <MapSearchBox />
         
         {/* POI Layer */}
         {showPOIs && <POILayer />}

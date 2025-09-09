@@ -74,19 +74,44 @@ export function PlaceForm({ place, onClose }: PlaceFormProps) {
     if (!formData.address.trim()) return;
     
     setIsSearching(true);
-    // Simulate API call delay
-    setTimeout(() => {
-      // For demo purposes, set random coordinates around Tokyo
-      const lat = 35.6762 + (Math.random() - 0.5) * 0.1;
-      const lng = 139.6503 + (Math.random() - 0.5) * 0.1;
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(formData.address)}&format=json&limit=1&addressdetails=1&accept-language=ja`
+      );
       
-      setFormData(prev => ({
-        ...prev,
-        lat: parseFloat(lat.toFixed(6)),
-        lng: parseFloat(lng.toFixed(6))
-      }));
+      if (!response.ok) {
+        throw new Error('検索に失敗しました');
+      }
+      
+      const data = await response.json();
+      
+      if (data.length > 0) {
+        const result = data[0];
+        const lat = parseFloat(result.lat);
+        const lng = parseFloat(result.lon);
+        
+        // より正確な住所名を取得
+        const displayName = result.display_name;
+        const name = result.name || displayName.split(',')[0] || formData.name;
+        
+        setFormData(prev => ({
+          ...prev,
+          name: prev.name || name,
+          address: displayName,
+          lat: parseFloat(lat.toFixed(6)),
+          lng: parseFloat(lng.toFixed(6))
+        }));
+        
+        alert(`✅ 場所が見つかりました！\n${name}\n座標: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+      } else {
+        alert('⚠️ 該当する場所が見つかりませんでした。\n別のキーワードを試してください。');
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      alert('❌ 住所検索中にエラーが発生しました。\nネットワーク接続を確認してください。');
+    } finally {
       setIsSearching(false);
-    }, 1000);
+    }
   };
 
   const categoryOptions = [
