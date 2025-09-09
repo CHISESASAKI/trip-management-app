@@ -606,6 +606,11 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
   initializeAuth: () => {
     const state = get();
     
+    // Firebase無効時は何もしない
+    if (!state.useFirebase) {
+      return;
+    }
+    
     // オンライン状態の監視
     if (typeof window !== 'undefined') {
       window.addEventListener('online', () => {
@@ -640,6 +645,13 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
   },
   
   signInAnonymously: async () => {
+    const state = get();
+    
+    // Firebase無効時は何もしない
+    if (!state.useFirebase) {
+      return;
+    }
+    
     try {
       await signInAnonymous();
       set({ useFirebase: true, syncStatus: 'syncing' });

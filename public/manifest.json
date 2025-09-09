@@ -10,13 +10,7 @@
   "categories": ["travel", "productivity", "utilities"],
   "lang": "ja",
   "dir": "ltr",
-  "icons": [
-    {
-      "src": "/vite.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
-    }
-  ],
+  "icons": [],
   "screenshots": [
     {
       "src": "screenshot-mobile.png",

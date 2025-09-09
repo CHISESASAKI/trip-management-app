@@ -9,17 +9,11 @@ import { useStore } from './store/useStore';
 function App() {
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
-  const { initializeAuth, loadData, signInAnonymously, places, trips } = useStore();
+  const { loadData, places, trips } = useStore();
 
   useEffect(() => {
-    // データをロード
+    // データをロード（ローカルのみ）
     loadData();
-    
-    // Firebase認証を初期化
-    initializeAuth();
-    
-    // Firebase自動ログイン（即座に実行）
-    signInAnonymously().catch(console.error);
 
     // 初回訪問判定
     const hasVisited = localStorage.getItem('trip-app-visited');
@@ -44,7 +38,7 @@ function App() {
         }
       });
     }
-  }, [initializeAuth, loadData, signInAnonymously, places.length, trips.length]);
+  }, [loadData, places.length, trips.length]);
 
   return (
     <div className="h-screen flex relative bg-gray-50 dark:bg-gray-900">
