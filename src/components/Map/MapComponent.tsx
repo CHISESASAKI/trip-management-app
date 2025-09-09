@@ -5,6 +5,7 @@ import L from 'leaflet';
 import { useEffect, useState, forwardRef, useRef, useImperativeHandle } from 'react';
 import { POILayer } from './POILayer';
 import { RouteLayer } from './RouteLayer';
+import { PhotoLayer } from './PhotoLayer';
 import { Moon, Sun } from 'lucide-react';
 
 // Fix for default markers
@@ -194,6 +195,7 @@ export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(funct
 
   const [showPOIs, setShowPOIs] = useState(true);
   const [showPastTrips, setShowPastTrips] = useState(true);
+  const [showPhotos, setShowPhotos] = useState(true);
   const mapRef = useRef<L.Map | null>(null);
 
   // Expose map via ref
@@ -270,6 +272,9 @@ export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(funct
         
         {/* POI Layer */}
         {showPOIs && <POILayer />}
+        
+        {/* Photo Layer */}
+        {showPhotos && <PhotoLayer />}
         
         {/* Route Layer */}
         <RouteLayer />
@@ -387,7 +392,7 @@ export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(funct
       </MapContainer>
       
       {/* Map controls - Responsive positioning */}
-      <div className="absolute top-4 left-4 md:top-4 md:right-4 space-y-2 z-10">
+      <div className="absolute top-20 left-4 md:top-4 md:right-4 space-y-2 z-10">
         <button
           onClick={() => setShowPOIs(!showPOIs)}
           className={`px-3 py-2 rounded-lg shadow-lg text-xs md:text-sm font-medium transition-colors ${
@@ -410,6 +415,18 @@ export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(funct
         >
           <span className="hidden md:inline">{showPastTrips ? '過去旅行非表示' : '過去旅行表示'}</span>
           <span className="md:hidden">🧳</span>
+        </button>
+        
+        <button
+          onClick={() => setShowPhotos(!showPhotos)}
+          className={`px-3 py-2 rounded-lg shadow-lg text-xs md:text-sm font-medium transition-colors ${
+            showPhotos 
+              ? 'bg-orange-600 text-white hover:bg-orange-700' 
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+          }`}
+        >
+          <span className="hidden md:inline">{showPhotos ? '写真非表示' : '写真表示'}</span>
+          <span className="md:hidden">📷</span>
         </button>
         
         <button

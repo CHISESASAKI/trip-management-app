@@ -8,9 +8,9 @@ interface VersionInfoProps {
 export function VersionInfo({ className = '' }: VersionInfoProps) {
   const [showDetail, setShowDetail] = useState(false);
   
-  const version = "v3.0.0";
+  const version = "v3.1.0";
   const buildDate = "2025-09-09";
-  const buildTime = "20:15:00";
+  const buildTime = "20:30:00";
 
   if (showDetail) {
     return (
@@ -44,10 +44,10 @@ export function VersionInfo({ className = '' }: VersionInfoProps) {
                 <span>更新内容:</span>
               </div>
               <div className="mt-1 text-xs text-gray-500">
-                • モバイルUI表示問題解決<br/>
-                • キャッシュ問題対策実装<br/>
-                • 地図タップ機能修正完了<br/>
-                • 全機能正常動作確認
+                • モバイルUI重複問題修正<br/>
+                • POI表示パフォーマンス改善<br/>
+                • 地図上写真表示機能追加<br/>
+                • 検索ボックス位置調整
               </div>
             </div>
           </div>
