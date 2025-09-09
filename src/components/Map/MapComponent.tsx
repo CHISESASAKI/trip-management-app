@@ -229,6 +229,9 @@ export function MapComponent({ className = '' }: MapComponentProps) {
 
   return (
     <div className={`relative ${className}`}>
+      {/* Modern Search Box - Outside MapContainer for better mobile compatibility */}
+      <ModernSearchBox />
+      
       <MapContainer
         center={mapViewState.center}
         zoom={mapViewState.zoom}
@@ -249,9 +252,6 @@ export function MapComponent({ className = '' }: MapComponentProps) {
         />
         
         <MapClickHandler />
-        
-        {/* Modern Search Box */}
-        <ModernSearchBox />
         
         {/* POI Layer */}
         {showPOIs && <POILayer />}

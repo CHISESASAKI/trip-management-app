@@ -60,10 +60,10 @@ function App() {
           )}
         </button>
 
-        {/* Help Button */}
+        {/* Help Button - Positioned to not conflict with search box */}
         <button
           onClick={() => setShowWelcomeGuide(true)}
-          className="fixed top-4 left-4 bg-blue-600 text-white rounded-lg shadow-xl p-3 hover:bg-blue-700 transition-colors"
+          className="fixed top-20 left-4 md:top-4 md:left-4 bg-blue-600 text-white rounded-lg shadow-xl p-3 hover:bg-blue-700 transition-colors"
           style={{ zIndex: 1004 }}
           aria-label="Help guide"
           title="使い方ガイド"

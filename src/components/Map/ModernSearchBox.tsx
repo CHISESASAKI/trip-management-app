@@ -263,7 +263,7 @@ export function ModernSearchBox() {
   };
 
   return (
-    <div className="fixed top-4 left-4 right-4 max-w-md mx-auto" style={{ zIndex: 1003 }}>
+    <div className="fixed top-4 left-4 right-4 max-w-md mx-auto z-[1003] md:max-w-sm">
       <div ref={resultsRef} className="relative">
         {/* Modern Search Input */}
         <div className="relative bg-white rounded-xl shadow-lg border border-gray-200 backdrop-blur-sm">
@@ -282,7 +282,7 @@ export function ModernSearchBox() {
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
-            className="block w-full pl-12 pr-10 py-4 border-0 rounded-xl bg-transparent focus:ring-0 focus:outline-none text-gray-900 placeholder-gray-500 text-base"
+            className="block w-full pl-12 pr-10 py-3 md:py-4 border-0 rounded-xl bg-transparent focus:ring-0 focus:outline-none text-gray-900 placeholder-gray-500 text-sm md:text-base"
             placeholder="場所を検索..."
             maxLength={100}
           />
