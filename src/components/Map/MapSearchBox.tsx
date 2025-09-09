@@ -176,7 +176,7 @@ export function MapSearchBox() {
   };
 
   return (
-    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20 w-full max-w-md px-4">
+    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4" style={{ zIndex: 1000 }}>
       <div ref={resultsRef} className="relative">
         {/* Search Input */}
         <div className="relative">

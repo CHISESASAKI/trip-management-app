@@ -54,7 +54,8 @@ function App() {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsSidePanelOpen(!isSidePanelOpen)}
-          className="md:hidden absolute top-4 right-4 z-20 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="md:hidden absolute top-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          style={{ zIndex: 1001 }}
           aria-label="Toggle menu"
         >
           {isSidePanelOpen ? <X size={24} className="text-gray-900 dark:text-gray-100" /> : <Menu size={24} className="text-gray-900 dark:text-gray-100" />}

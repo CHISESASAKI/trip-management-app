@@ -5,7 +5,7 @@ import L from 'leaflet';
 import { useEffect, useState } from 'react';
 import { POILayer } from './POILayer';
 import { RouteLayer } from './RouteLayer';
-import { MapSearchBox } from './MapSearchBox';
+import { ModernSearchBox } from './ModernSearchBox';
 import { Moon, Sun } from 'lucide-react';
 
 // Fix for default markers
@@ -250,8 +250,8 @@ export function MapComponent({ className = '' }: MapComponentProps) {
         
         <MapClickHandler />
         
-        {/* Map Search Box */}
-        <MapSearchBox />
+        {/* Modern Search Box */}
+        <ModernSearchBox />
         
         {/* POI Layer */}
         {showPOIs && <POILayer />}

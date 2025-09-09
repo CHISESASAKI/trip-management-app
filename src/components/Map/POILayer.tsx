@@ -141,16 +141,42 @@ export function POILayer() {
   const { addPlace } = useStore();
   const [pois, setPOIs] = useState<POI[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [lastBounds, setLastBounds] = useState<string>('');
+  const [loadTimeout, setLoadTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const loadPOIs = async () => {
     const zoom = map.getZoom();
-    if (zoom < 14) return; // Only show POIs at zoom level 14+
+    if (zoom < 14) {
+      setPOIs([]);
+      return;
+    }
 
-    setIsLoading(true);
     const bounds = map.getBounds();
-    const poisData = await fetchPOIs(bounds);
-    setPOIs(poisData);
-    setIsLoading(false);
+    const boundsKey = `${bounds.getNorth().toFixed(4)}-${bounds.getSouth().toFixed(4)}-${bounds.getEast().toFixed(4)}-${bounds.getWest().toFixed(4)}-${zoom}`;
+    
+    // Skip if same area already loaded
+    if (boundsKey === lastBounds) return;
+
+    // Clear existing timeout
+    if (loadTimeout) {
+      clearTimeout(loadTimeout);
+    }
+
+    // Debounced loading with visual feedback
+    const timeout = setTimeout(async () => {
+      setIsLoading(true);
+      try {
+        const poisData = await fetchPOIs(bounds);
+        setPOIs(poisData);
+        setLastBounds(boundsKey);
+      } catch (error) {
+        console.error('Failed to load POIs:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300); // 300ms delay for responsiveness
+
+    setLoadTimeout(timeout);
   };
 
   useEffect(() => {
@@ -166,6 +192,9 @@ export function POILayer() {
     return () => {
       map.off('moveend', handleMoveEnd);
       map.off('zoomend', handleMoveEnd);
+      if (loadTimeout) {
+        clearTimeout(loadTimeout);
+      }
     };
   }, [map]);
 
