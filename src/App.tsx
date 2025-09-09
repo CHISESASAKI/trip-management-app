@@ -1,6 +1,7 @@
 import { MapComponent } from './components/Map/MapComponent';
 import { SidePanel } from './components/SidePanel/SidePanel';
 import { WelcomeGuide } from './components/Onboarding/WelcomeGuide';
+import { VersionInfo } from './components/UI/VersionInfo';
 import { useState, useEffect } from 'react';
 import { Menu, X, HelpCircle } from 'lucide-react';
 import { useStore } from './store/useStore';
@@ -51,20 +52,25 @@ function App() {
       <div className="flex-1 relative">
         <MapComponent className="h-full" />
         
-        {/* Mobile Menu Button */}
+        {/* Mobile Menu Button - Enhanced positioning and visibility */}
         <button
           onClick={() => setIsSidePanelOpen(!isSidePanelOpen)}
-          className="md:hidden absolute top-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          style={{ zIndex: 1001 }}
+          className="md:hidden fixed top-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+          style={{ zIndex: 1005 }}
           aria-label="Toggle menu"
         >
-          {isSidePanelOpen ? <X size={24} className="text-gray-900 dark:text-gray-100" /> : <Menu size={24} className="text-gray-900 dark:text-gray-100" />}
+          {isSidePanelOpen ? (
+            <X size={24} className="text-gray-900 dark:text-gray-100" />
+          ) : (
+            <Menu size={24} className="text-gray-900 dark:text-gray-100" />
+          )}
         </button>
 
         {/* Help Button */}
         <button
           onClick={() => setShowWelcomeGuide(true)}
-          className="absolute top-4 left-4 z-20 bg-blue-600 text-white rounded-lg shadow-lg p-3 hover:bg-blue-700 transition-colors"
+          className="fixed top-4 left-4 bg-blue-600 text-white rounded-lg shadow-xl p-3 hover:bg-blue-700 transition-colors"
+          style={{ zIndex: 1004 }}
           aria-label="Help guide"
           title="使い方ガイド"
         >
@@ -94,6 +100,9 @@ function App() {
       {showWelcomeGuide && (
         <WelcomeGuide onClose={() => setShowWelcomeGuide(false)} />
       )}
+
+      {/* Version Info */}
+      <VersionInfo />
     </div>
   );
 }

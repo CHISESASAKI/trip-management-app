@@ -263,7 +263,7 @@ export function ModernSearchBox() {
   };
 
   return (
-    <div className="absolute top-4 left-4 right-4 z-[1000] max-w-md mx-auto">
+    <div className="fixed top-4 left-4 right-4 max-w-md mx-auto" style={{ zIndex: 1003 }}>
       <div ref={resultsRef} className="relative">
         {/* Modern Search Input */}
         <div className="relative bg-white rounded-xl shadow-lg border border-gray-200 backdrop-blur-sm">
