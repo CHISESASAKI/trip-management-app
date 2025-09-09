@@ -65,7 +65,7 @@ function App() {
         <button
           onClick={() => setIsSidePanelOpen(!isSidePanelOpen)}
           className="md:hidden fixed top-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-600 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
-          style={{ zIndex: 1005 }}
+          style={{ zIndex: 1050 }}
           aria-label="Toggle menu"
         >
           {isSidePanelOpen ? (
@@ -79,7 +79,7 @@ function App() {
         <button
           onClick={() => setShowWelcomeGuide(true)}
           className="fixed top-4 left-4 bg-blue-600 text-white rounded-lg shadow-xl p-3 hover:bg-blue-700 transition-colors"
-          style={{ zIndex: 1004 }}
+          style={{ zIndex: 1050, display: 'flex !important' }}
           aria-label="Help guide"
           title="使い方ガイド"
         >
