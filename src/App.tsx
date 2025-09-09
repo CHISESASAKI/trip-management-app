@@ -1,14 +1,18 @@
-import { MapComponent } from './components/Map/MapComponent';
+import { MapComponent, type MapComponentRef } from './components/Map/MapComponent';
 import { SidePanel } from './components/SidePanel/SidePanel';
 import { WelcomeGuide } from './components/Onboarding/WelcomeGuide';
 import { VersionInfo } from './components/UI/VersionInfo';
-import { useState, useEffect } from 'react';
+import { ModernSearchBox } from './components/Map/ModernSearchBox';
+import { useState, useEffect, useRef } from 'react';
 import { Menu, X, HelpCircle } from 'lucide-react';
 import { useStore } from './store/useStore';
+import type L from 'leaflet';
 
 function App() {
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
+  const mapComponentRef = useRef<MapComponentRef>(null);
+  const mapRef = useRef<L.Map | null>(null);
   const { loadData, places, trips } = useStore();
 
   useEffect(() => {
@@ -40,11 +44,22 @@ function App() {
     }
   }, [loadData, places.length, trips.length]);
 
+  // Sync map reference
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (mapComponentRef.current) {
+        mapRef.current = mapComponentRef.current.getMap();
+      }
+    }, 100);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="h-screen flex relative bg-gray-50 dark:bg-gray-900">
       {/* Map Area */}
       <div className="flex-1 relative">
-        <MapComponent className="h-full" />
+        <MapComponent ref={mapComponentRef} className="h-full" />
         
         {/* Mobile Menu Button - Enhanced positioning and visibility */}
         <button
@@ -70,6 +85,9 @@ function App() {
         >
           <HelpCircle size={20} />
         </button>
+
+        {/* Modern Search Box */}
+        <ModernSearchBox mapRef={mapRef} />
       </div>
       
       {/* Side Panel - Desktop: Fixed width, Mobile: Overlay */}

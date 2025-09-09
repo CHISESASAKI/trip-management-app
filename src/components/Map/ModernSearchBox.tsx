@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Search, MapPin, Navigation, Clock, X, Star } from 'lucide-react';
-import { useMap } from 'react-leaflet';
 import { useStore } from '../../store/useStore';
+import type L from 'leaflet';
 
 interface SearchResult {
   display_name: string;
@@ -16,7 +16,11 @@ interface SearchResult {
 // Cache for search results - modern pattern for fast UX
 const searchCache = new Map<string, SearchResult[]>();
 
-export function ModernSearchBox() {
+interface ModernSearchBoxProps {
+  mapRef?: React.MutableRefObject<L.Map | null>;
+}
+
+export function ModernSearchBox({ mapRef }: ModernSearchBoxProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -34,7 +38,6 @@ export function ModernSearchBox() {
   const searchRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const map = useMap();
   const { addPlace } = useStore();
 
   // Save recent searches to localStorage
@@ -132,10 +135,12 @@ export function ModernSearchBox() {
     addRecentSearch(name);
 
     // Animate map to location
-    map.setView([lat, lng], 16, {
-      animate: true,
-      duration: 0.5
-    });
+    if (mapRef?.current) {
+      mapRef.current.setView([lat, lng], 16, {
+        animate: true,
+        duration: 0.5
+      });
+    }
 
     // Clear search
     setQuery('');

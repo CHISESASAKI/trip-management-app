@@ -1,11 +1,10 @@
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import { useStore } from '../../store/useStore';
 import type { Place } from '../../types/base';
 import L from 'leaflet';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef, useRef, useImperativeHandle } from 'react';
 import { POILayer } from './POILayer';
 import { RouteLayer } from './RouteLayer';
-import { ModernSearchBox } from './ModernSearchBox';
 import { Moon, Sun } from 'lucide-react';
 
 // Fix for default markers
@@ -65,6 +64,17 @@ const getMarkerColor = (status: Place['status']) => {
   }
 };
 
+// Map reference setter component
+function MapRefSetter({ mapRef }: { mapRef: React.MutableRefObject<L.Map | null> }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    mapRef.current = map;
+  }, [map, mapRef]);
+
+  return null;
+}
+
 // Map click handler component
 function MapClickHandler() {
   const { setSelectedPlace, addPlace } = useStore();
@@ -103,7 +113,7 @@ function MapClickHandler() {
 }
 
 // Search for location information using Nominatim API
-async function searchLocationInfo(lat: number, lng: number, addPlace: Function) {
+async function searchLocationInfo(lat: number, lng: number, addPlace: (place: Omit<Place, 'id'>) => Promise<void>) {
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=ja`
@@ -131,7 +141,7 @@ async function searchLocationInfo(lat: number, lng: number, addPlace: Function) 
     }
     
     // Add the place
-    addPlace({
+    await addPlace({
       name,
       address,
       lat,
@@ -148,7 +158,7 @@ async function searchLocationInfo(lat: number, lng: number, addPlace: Function) 
     
     // Fallback: add with basic information
     const fallbackName = `場所 ${new Date().toLocaleTimeString()}`;
-    addPlace({
+    await addPlace({
       name: fallbackName,
       address: `緯度: ${lat.toFixed(6)}, 経度: ${lng.toFixed(6)}`,
       lat,
@@ -166,7 +176,11 @@ interface MapComponentProps {
   className?: string;
 }
 
-export function MapComponent({ className = '' }: MapComponentProps) {
+export interface MapComponentRef {
+  getMap: () => L.Map | null;
+}
+
+export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(function MapComponent({ className = '' }, ref) {
   const { 
     places, 
     trips,
@@ -180,6 +194,12 @@ export function MapComponent({ className = '' }: MapComponentProps) {
 
   const [showPOIs, setShowPOIs] = useState(true);
   const [showPastTrips, setShowPastTrips] = useState(true);
+  const mapRef = useRef<L.Map | null>(null);
+
+  // Expose map via ref
+  useImperativeHandle(ref, () => ({
+    getMap: () => mapRef.current
+  }), []);
 
   // Load data on component mount
   useEffect(() => {
@@ -233,9 +253,6 @@ export function MapComponent({ className = '' }: MapComponentProps) {
         center={mapViewState.center}
         zoom={mapViewState.zoom}
         className="h-full w-full z-0"
-        whenReady={() => {
-          // Map event handlers are set up in POILayer and MapClickHandler
-        }}
       >
         {/* パフォーマンス最適化されたタイルプロバイダー */}
         <TileLayer
@@ -248,10 +265,8 @@ export function MapComponent({ className = '' }: MapComponentProps) {
           updateWhenZooming={false}
         />
         
+        <MapRefSetter mapRef={mapRef} />
         <MapClickHandler />
-        
-        {/* Modern Search Box - Back inside MapContainer to fix useMap() hook */}
-        <ModernSearchBox />
         
         {/* POI Layer */}
         {showPOIs && <POILayer />}
@@ -483,4 +498,4 @@ export function MapComponent({ className = '' }: MapComponentProps) {
       </div>
     </div>
   );
-}
+});
