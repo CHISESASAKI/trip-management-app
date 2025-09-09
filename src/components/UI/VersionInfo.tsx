@@ -8,9 +8,9 @@ interface VersionInfoProps {
 export function VersionInfo({ className = '' }: VersionInfoProps) {
   const [showDetail, setShowDetail] = useState(false);
   
-  const version = "v3.1.1";
+  const version = "v3.2.0";
   const buildDate = "2025-09-09";
-  const buildTime = "20:45:00";
+  const buildTime = "21:00:00";
 
   if (showDetail) {
     return (
@@ -44,10 +44,10 @@ export function VersionInfo({ className = '' }: VersionInfoProps) {
                 <span>更新内容:</span>
               </div>
               <div className="mt-1 text-xs text-gray-500">
-                • 強制キャッシュクリア実装<br/>
-                • モバイル更新問題対策<br/>
-                • 全UI改善適用確認<br/>
-                • PWAキャッシュ回避強化
+                • モバイル地図読み込み最適化<br/>
+                • ズームボタン削除(モバイル)<br/>
+                • 地図パフォーマンス向上<br/>
+                • ローディング表示改善
               </div>
             </div>
           </div>

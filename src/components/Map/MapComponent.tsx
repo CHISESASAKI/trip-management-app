@@ -6,6 +6,7 @@ import { useEffect, useState, forwardRef, useRef, useImperativeHandle } from 're
 import { POILayer } from './POILayer';
 import { RouteLayer } from './RouteLayer';
 import { PhotoLayer } from './PhotoLayer';
+import { LoadingOverlay } from '../UI/LoadingOverlay';
 import { Moon, Sun } from 'lucide-react';
 
 // Fix for default markers
@@ -196,6 +197,7 @@ export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(funct
   const [showPOIs, setShowPOIs] = useState(true);
   const [showPastTrips, setShowPastTrips] = useState(true);
   const [showPhotos, setShowPhotos] = useState(true);
+  const [isMapLoading, setIsMapLoading] = useState(true);
   const mapRef = useRef<L.Map | null>(null);
 
   // Expose map via ref
@@ -251,20 +253,32 @@ export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(funct
 
   return (
     <div className={`relative ${className}`}>
+      <LoadingOverlay isLoading={isMapLoading} />
+      
       <MapContainer
         center={mapViewState.center}
         zoom={mapViewState.zoom}
         className="h-full w-full z-0"
+        zoomControl={false}
+        attributionControl={false}
+        preferCanvas={true}
+        updateWhenZooming={false}
+        updateWhenIdle={true}
       >
         {/* パフォーマンス最適化されたタイルプロバイダー */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
-          minZoom={3}
-          keepBuffer={2}
+          maxZoom={18}
+          minZoom={5}
+          keepBuffer={4}
           updateWhenIdle={true}
           updateWhenZooming={false}
+          loading="eager"
+          eventHandlers={{
+            loading: () => setIsMapLoading(true),
+            load: () => setIsMapLoading(false),
+          }}
         />
         
         <MapRefSetter mapRef={mapRef} />
@@ -391,8 +405,8 @@ export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(funct
         ))}
       </MapContainer>
       
-      {/* Map controls - Responsive positioning */}
-      <div className="absolute top-20 left-4 md:top-4 md:right-4 space-y-2 z-10">
+      {/* Map controls - Hidden zoom controls on mobile, positioned properly on desktop */}
+      <div className="absolute top-20 right-4 md:top-4 md:right-4 space-y-2 z-10">
         <button
           onClick={() => setShowPOIs(!showPOIs)}
           className={`px-3 py-2 rounded-lg shadow-lg text-xs md:text-sm font-medium transition-colors ${
@@ -440,6 +454,30 @@ export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(funct
             <Moon size={16} className="md:w-5 md:h-5" />
           )}
         </button>
+        
+        {/* Custom Zoom Controls - Desktop Only */}
+        <div className="hidden md:flex flex-col bg-white rounded-lg shadow-lg overflow-hidden">
+          <button
+            onClick={() => {
+              if (mapRef.current) {
+                mapRef.current.zoomIn();
+              }
+            }}
+            className="p-2 hover:bg-gray-50 border-b border-gray-200 text-gray-700 font-bold text-lg"
+          >
+            +
+          </button>
+          <button
+            onClick={() => {
+              if (mapRef.current) {
+                mapRef.current.zoomOut();
+              }
+            }}
+            className="p-2 hover:bg-gray-50 text-gray-700 font-bold text-lg"
+          >
+            −
+          </button>
+        </div>
       </div>
 
       {/* Map legend - Hide on small screens, show on hover/click */}
