@@ -49,13 +49,13 @@ export function PhotoLayer() {
     const groups: PhotoGroup[] = [];
     
     photos
-      .filter(photo => photo.lat && photo.lng)
+      .filter(photo => photo.location?.lat && photo.location?.lng)
       .forEach(photo => {
-        if (!photo.lat || !photo.lng) return;
+        if (!photo.location?.lat || !photo.location?.lng) return;
         
         // Find existing group within 10m radius
         const existingGroup = groups.find(group => {
-          const distance = getDistance(group.lat, group.lng, photo.lat!, photo.lng!);
+          const distance = getDistance(group.lat, group.lng, photo.location!.lat, photo.location!.lng);
           return distance < 10; // 10 meters
         });
         
@@ -63,8 +63,8 @@ export function PhotoLayer() {
           existingGroup.photos.push(photo);
         } else {
           groups.push({
-            lat: photo.lat,
-            lng: photo.lng,
+            lat: photo.location.lat,
+            lng: photo.location.lng,
             photos: [photo]
           });
         }
@@ -109,7 +109,7 @@ export function PhotoLayer() {
                     {photo.url ? (
                       <img
                         src={photo.url}
-                        alt={photo.description || photo.filename}
+                        alt={photo.caption || 'Photo'}
                         className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-80"
                         onClick={() => window.open(photo.url, '_blank')}
                       />
@@ -120,16 +120,11 @@ export function PhotoLayer() {
                     )}
                     
                     <div className="mt-1">
-                      <p className="text-xs text-gray-600 truncate" title={photo.filename}>
-                        {photo.filename}
+                      <p className="text-xs text-gray-600 truncate" title={photo.caption || photo.id}>
+                        {photo.caption || `Photo ${photo.id.slice(0, 8)}`}
                       </p>
-                      {photo.description && (
-                        <p className="text-xs text-gray-500 truncate" title={photo.description}>
-                          {photo.description}
-                        </p>
-                      )}
                       <p className="text-xs text-gray-400">
-                        {new Date(photo.takenAt).toLocaleDateString('ja-JP')}
+                        {photo.takenAt ? new Date(photo.takenAt).toLocaleDateString('ja-JP') : '日付不明'}
                       </p>
                     </div>
                   </div>
