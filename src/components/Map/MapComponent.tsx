@@ -115,7 +115,7 @@ function MapClickHandler() {
 }
 
 // Search for location information using Nominatim API
-async function searchLocationInfo(lat: number, lng: number, addPlace: (place: Omit<Place, 'id'>) => Promise<void>) {
+async function searchLocationInfo(lat: number, lng: number, addPlace: (place: Omit<Place, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>) {
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=ja`

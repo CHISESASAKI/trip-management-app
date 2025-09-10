@@ -10,6 +10,8 @@ export interface Place {
   openingHours?: string;
   website?: string;
   phone?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Trip {
@@ -56,7 +58,7 @@ export interface Photo {
   placeId?: string;
   url: string; // base64 or URL
   caption?: string;
-  takenAt?: string; // ISO string
+  takenAt: string; // ISO string
   location?: {
     lat: number;
     lng: number;
@@ -64,7 +66,7 @@ export interface Photo {
   autoClassified?: boolean;
   classificationDistance?: number;
   createdAt: string;
-  updatedAt?: string;
+  updatedAt: string;
 }
 
 export type ViewMode = 'places' | 'planning' | 'records' | 'timeline';

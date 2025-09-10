@@ -7,7 +7,6 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
   onSnapshot,
   serverTimestamp,
   Timestamp
@@ -28,9 +27,11 @@ export interface FirestoreTrip extends Omit<Trip, 'id' | 'createdAt' | 'updatedA
   updatedAt: Timestamp;
 }
 
-export interface FirestorePhoto extends Omit<Photo, 'id' | 'takenAt'> {
+export interface FirestorePhoto extends Omit<Photo, 'id' | 'takenAt' | 'createdAt' | 'updatedAt'> {
   userId: string;
   takenAt: Timestamp;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 }
 
 // Places操作
@@ -224,7 +225,9 @@ export class PhotoService {
         return {
           id: doc.id,
           ...data,
-          takenAt: data.takenAt?.toDate().toISOString()
+          takenAt: data.takenAt?.toDate().toISOString(),
+          createdAt: data.createdAt?.toDate().toISOString(),
+          updatedAt: data.updatedAt?.toDate().toISOString()
         } as unknown as Photo;
       });
       
@@ -236,12 +239,14 @@ export class PhotoService {
     }
   }
 
-  static async addPhoto(userId: string, photo: Omit<Photo, 'id'>): Promise<string> {
+  static async addPhoto(userId: string, photo: Omit<Photo, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     try {
       const docRef = await addDoc(collection(db, 'photos'), {
         ...photo,
         userId,
-        takenAt: photo.takenAt ? Timestamp.fromDate(new Date(photo.takenAt)) : serverTimestamp()
+        takenAt: photo.takenAt ? Timestamp.fromDate(new Date(photo.takenAt)) : serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       });
       return docRef.id;
     } catch (error) {
@@ -271,7 +276,9 @@ export class PhotoService {
         return {
           id: doc.id,
           ...data,
-          takenAt: data.takenAt?.toDate().toISOString()
+          takenAt: data.takenAt?.toDate().toISOString(),
+          createdAt: data.createdAt?.toDate().toISOString(),
+          updatedAt: data.updatedAt?.toDate().toISOString()
         } as unknown as Photo;
       });
       

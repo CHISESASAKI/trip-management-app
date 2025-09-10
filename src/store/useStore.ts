@@ -7,7 +7,7 @@ import type { Place, Trip, ViewMode, DayPlan, DayPlaceItem, Photo } from '../typ
 
 interface StoreActions {
   // Places
-  addPlace: (place: Omit<Place, 'id'>) => Promise<void>;
+  addPlace: (place: Omit<Place, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updatePlace: (id: string, updates: Partial<Place>) => Promise<void>;
   deletePlace: (id: string) => Promise<void>;
   setSelectedPlace: (place: Place | undefined) => void;
@@ -28,7 +28,7 @@ interface StoreActions {
   getDayPlansForTrip: (tripId: string) => DayPlan[];
   
   // Photos
-  addPhoto: (photo: Omit<Photo, 'id' | 'createdAt'>) => Promise<void>;
+  addPhoto: (photo: Omit<Photo, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   deletePhoto: (id: string) => Promise<void>;
   
   // View Mode
@@ -124,14 +124,26 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
         console.error('Failed to add place to Firebase:', error);
         state.setSyncStatus('error');
         // フォールバックとしてローカルに保存
-        const place: Place = { ...placeData, id: generateId() };
+        const now = new Date().toISOString();
+        const place: Place = { 
+          ...placeData, 
+          id: generateId(),
+          createdAt: now,
+          updatedAt: now
+        };
         set((state) => ({
           places: [...state.places, place]
         }));
         get().saveData();
       }
     } else {
-      const place: Place = { ...placeData, id: generateId() };
+      const now = new Date().toISOString();
+      const place: Place = { 
+        ...placeData, 
+        id: generateId(),
+        createdAt: now,
+        updatedAt: now
+      };
       set((state) => ({
         places: [...state.places, place]
       }));
@@ -485,17 +497,24 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
     if (state.useFirebase && state.currentUser) {
       try {
         state.setSyncStatus('syncing');
-        const photoWithCreated = { ...photoData, createdAt: new Date().toISOString() };
+        const now = new Date().toISOString();
+        const photoWithCreated = { 
+          ...photoData, 
+          createdAt: now,
+          updatedAt: now
+        };
         await PhotoService.addPhoto(state.currentUser.uid, photoWithCreated);
         state.setSyncStatus('synced');
       } catch (error) {
         console.error('Failed to add photo to Firebase:', error);
         state.setSyncStatus('error');
         // フォールバックとしてローカル保存
+        const now = new Date().toISOString();
         const photo: Photo = { 
           ...photoData, 
           id: generateId(),
-          createdAt: new Date().toISOString()
+          createdAt: now,
+          updatedAt: now
         };
         set((state) => ({
           photos: [...state.photos, photo]
@@ -503,10 +522,12 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
         get().saveData();
       }
     } else {
+      const now = new Date().toISOString();
       const photo: Photo = { 
         ...photoData, 
         id: generateId(),
-        createdAt: new Date().toISOString()
+        createdAt: now,
+        updatedAt: now
       };
       set((state) => ({
         photos: [...state.photos, photo]
