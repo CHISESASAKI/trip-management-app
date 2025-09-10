@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../../store/useStore';
-import type { Trip, Place } from '../../types/base';
-import { X, Calendar, MapPin, FileText, Plus, GripVertical, Trash2 } from 'lucide-react';
+import type { Trip } from '../../types/base';
+import { X, Calendar, MapPin, FileText, GripVertical, Trash2 } from 'lucide-react';
 
 interface TripFormProps {
   trip?: Trip;

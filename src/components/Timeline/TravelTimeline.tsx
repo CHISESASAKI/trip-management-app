@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../../store/useStore';
-import { Calendar, MapPin, Camera, DollarSign, Clock, Star, FileText, Eye } from 'lucide-react';
+import { Calendar, MapPin, Camera, Clock, Star, FileText, Eye } from 'lucide-react';
 import type { Trip } from '../../types/base';
 import { TripRecordEditor } from '../TripRecord/TripRecordEditor';
 
@@ -58,7 +58,6 @@ export function TravelTimeline() {
   const totalTrips = completedTrips.length;
   const totalPhotos = timelineItems.reduce((sum, item) => sum + item.photoCount, 0);
   const totalPlaces = timelineItems.reduce((sum, item) => sum + item.visitedPlaces, 0);
-  const totalCost = completedTrips.reduce((sum, trip) => sum + (trip.actualCost || 0), 0);
 
   const handleTripClick = (trip: Trip) => {
     setSelectedTrip(trip);
@@ -130,9 +129,9 @@ export function TravelTimeline() {
           </div>
           <div className="text-center p-3 bg-orange-50 dark:bg-orange-900 rounded-lg">
             <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-              {totalCost > 0 ? `¥${Math.round(totalCost / 10000)}万` : '未記録'}
+              {years.length}年
             </div>
-            <div className="text-sm text-orange-800 dark:text-orange-300">総費用</div>
+            <div className="text-sm text-orange-800 dark:text-orange-300">活動期間</div>
           </div>
         </div>
       </div>
@@ -214,7 +213,7 @@ export function TravelTimeline() {
                           </div>
 
                           {/* 統計情報 */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                             <div className="flex items-center gap-2">
                               <Clock size={16} className="text-gray-500" />
                               <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -233,14 +232,6 @@ export function TravelTimeline() {
                                 {item.photoCount}枚
                               </span>
                             </div>
-                            {item.trip.actualCost && (
-                              <div className="flex items-center gap-2">
-                                <DollarSign size={16} className="text-gray-500" />
-                                <span className="text-sm text-gray-600 dark:text-gray-400">
-                                  ¥{item.trip.actualCost.toLocaleString()}
-                                </span>
-                              </div>
-                            )}
                           </div>
 
                           {/* タグ */}
