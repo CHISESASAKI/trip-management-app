@@ -140,6 +140,7 @@ export function POILayer() {
   const map = useMap();
   const { addPlace } = useStore();
   const [pois, setPOIs] = useState<POI[]>([]);
+  const [cachedPOIs, setCachedPOIs] = useState<POI[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastBounds, setLastBounds] = useState<string>('');
   const [loadTimeout, setLoadTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -147,14 +148,14 @@ export function POILayer() {
   const loadPOIs = async () => {
     const zoom = map.getZoom();
     if (zoom < 14) {
-      setPOIs([]);
+      // Keep POIs visible even at lower zoom levels
       return;
     }
 
     const bounds = map.getBounds();
-    const boundsKey = `${bounds.getNorth().toFixed(4)}-${bounds.getSouth().toFixed(4)}-${bounds.getEast().toFixed(4)}-${bounds.getWest().toFixed(4)}-${zoom}`;
+    const boundsKey = `${bounds.getNorth().toFixed(2)}-${bounds.getSouth().toFixed(2)}-${bounds.getEast().toFixed(2)}-${bounds.getWest().toFixed(2)}-${Math.floor(zoom)}`;
     
-    // Skip if same area already loaded
+    // Skip if same area already loaded (less strict comparison)
     if (boundsKey === lastBounds) return;
 
     // Clear existing timeout
@@ -162,36 +163,62 @@ export function POILayer() {
       clearTimeout(loadTimeout);
     }
 
-    // Debounced loading with visual feedback
+    // Keep current POIs visible while loading new ones
+    // Significantly increased debounce for better persistence
     const timeout = setTimeout(async () => {
       setIsLoading(true);
       try {
         const poisData = await fetchPOIs(bounds);
-        setPOIs(poisData);
-        setLastBounds(boundsKey);
+        if (poisData.length > 0) {
+          // Merge with existing POIs for smoother transition
+          const mergedPOIs = [...cachedPOIs.filter(p => 
+            Math.abs(p.lat - bounds.getCenter().lat) < 0.01 && 
+            Math.abs(p.lng - bounds.getCenter().lng) < 0.01
+          ), ...poisData];
+          
+          setPOIs(mergedPOIs);
+          setCachedPOIs(mergedPOIs);
+          setLastBounds(boundsKey);
+        }
       } catch (error) {
         console.error('Failed to load POIs:', error);
+        // Keep existing POIs on error
       } finally {
         setIsLoading(false);
       }
-    }, 300); // 300ms delay for responsiveness
+    }, 1200); // Increased to 1.2s for much better persistence
 
     setLoadTimeout(timeout);
   };
 
   useEffect(() => {
-    loadPOIs();
+    // Initial load with slight delay for stability
+    const initialLoad = setTimeout(() => {
+      loadPOIs();
+    }, 500);
 
     const handleMoveEnd = () => {
+      // Only load POIs if we're not actively moving
+      const moveTimeout = setTimeout(() => {
+        loadPOIs();
+      }, 300);
+      
+      return () => clearTimeout(moveTimeout);
+    };
+
+    const handleZoomEnd = () => {
+      // Immediate load on zoom end for better responsiveness
       loadPOIs();
     };
 
+    // Use passive listeners for better mobile performance
     map.on('moveend', handleMoveEnd);
-    map.on('zoomend', handleMoveEnd);
+    map.on('zoomend', handleZoomEnd);
 
     return () => {
+      clearTimeout(initialLoad);
       map.off('moveend', handleMoveEnd);
-      map.off('zoomend', handleMoveEnd);
+      map.off('zoomend', handleZoomEnd);
       if (loadTimeout) {
         clearTimeout(loadTimeout);
       }

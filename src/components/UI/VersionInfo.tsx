@@ -8,9 +8,9 @@ interface VersionInfoProps {
 export function VersionInfo({ className = '' }: VersionInfoProps) {
   const [showDetail, setShowDetail] = useState(false);
   
-  const version = "v3.2.0";
-  const buildDate = "2025-09-09";
-  const buildTime = "21:00:00";
+  const version = "v3.2.1";
+  const buildDate = "2025-09-10";
+  const buildTime = "15:30:00";
 
   if (showDetail) {
     return (
@@ -44,10 +44,10 @@ export function VersionInfo({ className = '' }: VersionInfoProps) {
                 <span>更新内容:</span>
               </div>
               <div className="mt-1 text-xs text-gray-500">
-                • モバイル地図読み込み最適化<br/>
-                • ズームボタン削除(モバイル)<br/>
-                • 地図パフォーマンス向上<br/>
-                • ローディング表示改善
+                • UIスケーリング問題修正<br/>
+                • POI表示持続性向上<br/>
+                • モバイル地図操作性改善<br/>
+                • 最終仕上げ完了
               </div>
             </div>
           </div>

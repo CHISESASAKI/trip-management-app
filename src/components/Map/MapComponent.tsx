@@ -400,8 +400,8 @@ export const MapComponent = forwardRef<MapComponentRef, MapComponentProps>(funct
         ))}
       </MapContainer>
       
-      {/* Map controls - Hidden zoom controls on mobile, positioned properly on desktop */}
-      <div className="absolute top-20 right-4 md:top-4 md:right-4 space-y-2 z-10">
+      {/* Map controls - Fixed positioning to prevent zoom scaling */}
+      <div className="absolute top-20 right-4 md:top-4 md:right-4 space-y-2 z-10" style={{ transform: 'none', transformOrigin: 'initial' }}>
         <button
           onClick={() => setShowPOIs(!showPOIs)}
           className={`px-3 py-2 rounded-lg shadow-lg text-xs md:text-sm font-medium transition-colors ${

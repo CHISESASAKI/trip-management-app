@@ -79,7 +79,12 @@ function App() {
         <button
           onClick={() => setShowWelcomeGuide(true)}
           className="fixed top-4 left-4 bg-blue-600 text-white rounded-lg shadow-xl p-3 hover:bg-blue-700 transition-colors"
-          style={{ zIndex: 1050 }}
+          style={{ 
+            zIndex: 1050, 
+            transform: 'none',
+            transformOrigin: 'initial',
+            touchAction: 'manipulation'
+          }}
           aria-label="Help guide"
           title="使い方ガイド"
         >
