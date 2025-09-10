@@ -77,7 +77,7 @@ const createPOIIcon = (category: POI['category'], isTemporary = true) => {
   });
 };
 
-// Fetch POIs from Overpass API
+// Fetch POIs from Overpass API with rate limiting protection
 async function fetchPOIs(bounds: L.LatLngBounds): Promise<POI[]> {
   const south = bounds.getSouth();
   const west = bounds.getWest();
@@ -86,7 +86,7 @@ async function fetchPOIs(bounds: L.LatLngBounds): Promise<POI[]> {
 
   // Overpass API query for various POI types
   const query = `
-    [out:json][timeout:25];
+    [out:json][timeout:30];
     (
       node["amenity"~"^(museum|gallery|arts_centre|restaurant|fast_food|cafe|bar|pub)$"](${south},${west},${north},${east});
       node["tourism"~"^(museum|gallery|attraction)$"](${south},${west},${north},${east});
@@ -98,10 +98,22 @@ async function fetchPOIs(bounds: L.LatLngBounds): Promise<POI[]> {
     const response = await fetch('https://overpass-api.de/api/interpreter', {
       method: 'POST',
       body: query,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     });
 
     if (!response.ok) {
-      throw new Error('POI data fetch failed');
+      if (response.status === 429) {
+        console.warn('Overpass API rate limit reached, waiting...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return [];
+      }
+      if (response.status >= 500) {
+        console.warn('Overpass API server error, retrying later...');
+        return [];
+      }
+      throw new Error(`POI data fetch failed: ${response.status}`);
     }
 
     const data = await response.json();
@@ -144,11 +156,18 @@ export function POILayer() {
   const [isLoading, setIsLoading] = useState(false);
   const [lastBounds, setLastBounds] = useState<string>('');
   const [loadTimeout, setLoadTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [lastLoadTime, setLastLoadTime] = useState<number>(0);
 
   const loadPOIs = async () => {
     const zoom = map.getZoom();
     if (zoom < 14) {
       // Keep POIs visible even at lower zoom levels
+      return;
+    }
+
+    // Rate limiting: minimum 3 seconds between requests
+    const now = Date.now();
+    if (now - lastLoadTime < 3000) {
       return;
     }
 
@@ -164,9 +183,10 @@ export function POILayer() {
     }
 
     // Keep current POIs visible while loading new ones
-    // Significantly increased debounce for better persistence
+    // Significantly increased debounce for better persistence and API protection
     const timeout = setTimeout(async () => {
       setIsLoading(true);
+      setLastLoadTime(Date.now());
       try {
         const poisData = await fetchPOIs(bounds);
         if (poisData.length > 0) {
@@ -181,12 +201,12 @@ export function POILayer() {
           setLastBounds(boundsKey);
         }
       } catch (error) {
-        console.error('Failed to load POIs:', error);
+        console.warn('POI loading failed, keeping existing POIs:', error);
         // Keep existing POIs on error
       } finally {
         setIsLoading(false);
       }
-    }, 1200); // Increased to 1.2s for much better persistence
+    }, 1500); // Increased to 1.5s for better API protection
 
     setLoadTimeout(timeout);
   };
