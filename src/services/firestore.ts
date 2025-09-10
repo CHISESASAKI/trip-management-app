@@ -37,13 +37,13 @@ export interface FirestorePhoto extends Omit<Photo, 'id' | 'takenAt'> {
 export class PlaceService {
   static async getPlaces(userId: string): Promise<Place[]> {
     try {
+      // シンプルなクエリでインデックス不要
       const q = query(
         collection(db, 'places'),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
+        where('userId', '==', userId)
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => {
+      const places = snapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
@@ -52,6 +52,9 @@ export class PlaceService {
           updatedAt: data.updatedAt?.toDate().toISOString()
         } as unknown as Place;
       });
+      
+      // クライアントサイドでソート
+      return places.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     } catch (error) {
       console.error('Failed to get places:', error);
       throw error;
@@ -98,8 +101,7 @@ export class PlaceService {
   static subscribeToPlaces(userId: string, callback: (places: Place[]) => void) {
     const q = query(
       collection(db, 'places'),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', userId)
     );
     
     return onSnapshot(q, (snapshot) => {
@@ -112,7 +114,10 @@ export class PlaceService {
           updatedAt: data.updatedAt?.toDate().toISOString()
         } as unknown as Place;
       });
-      callback(places);
+      
+      // クライアントサイドでソート
+      const sortedPlaces = places.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      callback(sortedPlaces);
     });
   }
 }
@@ -123,11 +128,10 @@ export class TripService {
     try {
       const q = query(
         collection(db, 'trips'),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc')
+        where('userId', '==', userId)
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => {
+      const trips = snapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
@@ -136,6 +140,9 @@ export class TripService {
           updatedAt: data.updatedAt?.toDate().toISOString()
         } as unknown as Trip;
       });
+      
+      // クライアントサイドでソート
+      return trips.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     } catch (error) {
       console.error('Failed to get trips:', error);
       throw error;
@@ -182,8 +189,7 @@ export class TripService {
   static subscribeToTrips(userId: string, callback: (trips: Trip[]) => void) {
     const q = query(
       collection(db, 'trips'),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', userId)
     );
     
     return onSnapshot(q, (snapshot) => {
@@ -196,7 +202,10 @@ export class TripService {
           updatedAt: data.updatedAt?.toDate().toISOString()
         } as unknown as Trip;
       });
-      callback(trips);
+      
+      // クライアントサイドでソート
+      const sortedTrips = trips.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      callback(sortedTrips);
     });
   }
 }
@@ -207,11 +216,10 @@ export class PhotoService {
     try {
       const q = query(
         collection(db, 'photos'),
-        where('userId', '==', userId),
-        orderBy('takenAt', 'desc')
+        where('userId', '==', userId)
       );
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => {
+      const photos = snapshot.docs.map(doc => {
         const data = doc.data();
         return {
           id: doc.id,
@@ -219,6 +227,9 @@ export class PhotoService {
           takenAt: data.takenAt?.toDate().toISOString()
         } as unknown as Photo;
       });
+      
+      // クライアントサイドでソート
+      return photos.sort((a, b) => new Date(b.takenAt || 0).getTime() - new Date(a.takenAt || 0).getTime());
     } catch (error) {
       console.error('Failed to get photos:', error);
       throw error;
@@ -251,8 +262,7 @@ export class PhotoService {
   static subscribeToPhotos(userId: string, callback: (photos: Photo[]) => void) {
     const q = query(
       collection(db, 'photos'),
-      where('userId', '==', userId),
-      orderBy('takenAt', 'desc')
+      where('userId', '==', userId)
     );
     
     return onSnapshot(q, (snapshot) => {
@@ -264,7 +274,10 @@ export class PhotoService {
           takenAt: data.takenAt?.toDate().toISOString()
         } as unknown as Photo;
       });
-      callback(photos);
+      
+      // クライアントサイドでソート
+      const sortedPhotos = photos.sort((a, b) => new Date(b.takenAt || 0).getTime() - new Date(a.takenAt || 0).getTime());
+      callback(sortedPhotos);
     });
   }
 }
