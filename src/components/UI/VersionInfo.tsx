@@ -8,9 +8,9 @@ interface VersionInfoProps {
 export function VersionInfo({ className = '' }: VersionInfoProps) {
   const [showDetail, setShowDetail] = useState(false);
   
-  const version = "v3.2.2";
+  const version = "v3.2.3";
   const buildDate = "2025-09-10";
-  const buildTime = "16:00:00";
+  const buildTime = "16:15:00";
 
   if (showDetail) {
     return (
@@ -44,10 +44,10 @@ export function VersionInfo({ className = '' }: VersionInfoProps) {
                 <span>更新内容:</span>
               </div>
               <div className="mt-1 text-xs text-gray-500">
-                • Overpass API制限エラー修正<br/>
-                • POI読み込み頻度制限追加<br/>
-                • エラーハンドリング強化<br/>
-                • API安定性向上
+                • POI応答性向上(1s遅延)<br/>
+                • 移動検出速度向上(200ms)<br/>
+                • レート制限最適化(2s間隔)<br/>
+                • レスポンス・安定性バランス調整
               </div>
             </div>
           </div>

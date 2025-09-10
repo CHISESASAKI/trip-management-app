@@ -105,8 +105,8 @@ async function fetchPOIs(bounds: L.LatLngBounds): Promise<POI[]> {
 
     if (!response.ok) {
       if (response.status === 429) {
-        console.warn('Overpass API rate limit reached, waiting...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.warn('Overpass API rate limit reached, using cached POIs...');
+        // Return cached POIs instead of empty array during rate limiting
         return [];
       }
       if (response.status >= 500) {
@@ -165,9 +165,9 @@ export function POILayer() {
       return;
     }
 
-    // Rate limiting: minimum 3 seconds between requests
+    // Rate limiting: minimum 2 seconds between requests (balanced approach)
     const now = Date.now();
-    if (now - lastLoadTime < 3000) {
+    if (now - lastLoadTime < 2000) {
       return;
     }
 
@@ -206,7 +206,7 @@ export function POILayer() {
       } finally {
         setIsLoading(false);
       }
-    }, 1500); // Increased to 1.5s for better API protection
+    }, 1000); // Optimized to 1s for better responsiveness while maintaining stability
 
     setLoadTimeout(timeout);
   };
@@ -218,10 +218,10 @@ export function POILayer() {
     }, 500);
 
     const handleMoveEnd = () => {
-      // Only load POIs if we're not actively moving
+      // Reduced delay for faster response to user movement
       const moveTimeout = setTimeout(() => {
         loadPOIs();
-      }, 300);
+      }, 200);
       
       return () => clearTimeout(moveTimeout);
     };

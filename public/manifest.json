@@ -2,7 +2,7 @@
   "name": "一人旅管理アプリ",
   "short_name": "旅行管理",
   "description": "地図ベースで旅行の計画・実行・記録を一元管理できるWebアプリケーション",
-  "start_url": "/?v=3.2.2",
+  "start_url": "/?v=3.2.3",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3B82F6",
