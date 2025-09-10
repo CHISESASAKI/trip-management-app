@@ -1,6 +1,6 @@
 import { useStore } from '../../store/useStore';
 import type { Trip } from '../../types/base';
-import { Calendar, MapPin, Edit3, Trash2, DollarSign, Clock, Camera, Plus, FileText } from 'lucide-react';
+import { Calendar, MapPin, Edit3, Trash2, Clock, Camera, Plus, FileText } from 'lucide-react';
 import { useState } from 'react';
 import { TripForm } from './TripForm';
 import { PhotoUpload } from '../Photos/PhotoUpload';
@@ -319,12 +319,6 @@ function TripCard({
               </span>
             )}
             
-            {trip.budget && (
-              <div className="flex items-center gap-1 text-xs text-gray-500">
-                <DollarSign size={12} />
-                <span>{trip.budget.toLocaleString()}円</span>
-              </div>
-            )}
           </div>
 
           <div className="flex items-center gap-3 text-xs text-gray-500">

@@ -268,7 +268,7 @@ export function ModernSearchBox({ mapRef }: ModernSearchBoxProps) {
   };
 
   return (
-    <div className="fixed top-4 left-16 right-20 md:left-4 md:right-96 max-w-md z-[1040]">
+    <div className="fixed top-4 left-16 right-24 md:left-4 md:right-[25rem] max-w-md z-[1040]">
       <div ref={resultsRef} className="relative">
         {/* Modern Search Input */}
         <div className="relative bg-white rounded-xl shadow-lg border border-gray-200 backdrop-blur-sm">

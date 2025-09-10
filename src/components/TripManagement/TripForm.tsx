@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../../store/useStore';
-import type { Trip } from '../../types/base';
-import { X, Calendar, MapPin, DollarSign, FileText } from 'lucide-react';
+import type { Trip, Place } from '../../types/base';
+import { X, Calendar, MapPin, FileText, Plus, GripVertical, Trash2 } from 'lucide-react';
 
 interface TripFormProps {
   trip?: Trip;
@@ -9,7 +9,7 @@ interface TripFormProps {
 }
 
 export function TripForm({ trip, onClose }: TripFormProps) {
-  const { addTrip, updateTrip } = useStore();
+  const { addTrip, updateTrip, places } = useStore();
   
   const [formData, setFormData] = useState({
     name: trip?.name || '',
@@ -17,12 +17,12 @@ export function TripForm({ trip, onClose }: TripFormProps) {
     startDate: trip?.startDate || '',
     endDate: trip?.endDate || '',
     theme: trip?.theme || '',
-    budget: trip?.budget?.toString() || '',
     notes: trip?.notes || '',
     status: trip?.status || 'planned' as Trip['status']
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedPlaces, setSelectedPlaces] = useState<string[]>(trip?.places || []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -43,9 +43,6 @@ export function TripForm({ trip, onClose }: TripFormProps) {
       newErrors.endDate = '終了日は開始日以降にしてください';
     }
 
-    if (formData.budget && isNaN(Number(formData.budget))) {
-      newErrors.budget = '予算は数値で入力してください';
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -64,10 +61,9 @@ export function TripForm({ trip, onClose }: TripFormProps) {
       startDate: formData.startDate,
       endDate: formData.endDate,
       theme: formData.theme.trim() || undefined,
-      budget: formData.budget ? Number(formData.budget) : undefined,
       notes: formData.notes.trim() || undefined,
       status: formData.status,
-      places: trip?.places || [],
+      places: selectedPlaces,
       images: trip?.images || []
     };
 
@@ -84,6 +80,35 @@ export function TripForm({ trip, onClose }: TripFormProps) {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  // 場所の追加
+  const addPlace = (placeId: string) => {
+    if (!selectedPlaces.includes(placeId)) {
+      setSelectedPlaces(prev => [...prev, placeId]);
+    }
+  };
+
+  // 場所の削除
+  const removePlace = (placeId: string) => {
+    setSelectedPlaces(prev => prev.filter(id => id !== placeId));
+  };
+
+  // 場所の順番変更
+  const movePlaceUp = (index: number) => {
+    if (index > 0) {
+      const newPlaces = [...selectedPlaces];
+      [newPlaces[index - 1], newPlaces[index]] = [newPlaces[index], newPlaces[index - 1]];
+      setSelectedPlaces(newPlaces);
+    }
+  };
+
+  const movePlaceDown = (index: number) => {
+    if (index < selectedPlaces.length - 1) {
+      const newPlaces = [...selectedPlaces];
+      [newPlaces[index], newPlaces[index + 1]] = [newPlaces[index + 1], newPlaces[index]];
+      setSelectedPlaces(newPlaces);
     }
   };
 
@@ -199,25 +224,6 @@ export function TripForm({ trip, onClose }: TripFormProps) {
             </select>
           </div>
 
-          {/* 予算 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <DollarSign size={16} className="inline mr-1" />
-              予算
-            </label>
-            <input
-              type="text"
-              value={formData.budget}
-              onChange={(e) => handleChange('budget', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.budget ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="50000"
-            />
-            {errors.budget && <p className="text-red-500 text-sm mt-1">{errors.budget}</p>}
-            <p className="text-gray-500 text-sm mt-1">円単位で入力してください</p>
-          </div>
-
           {/* ステータス */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -232,6 +238,102 @@ export function TripForm({ trip, onClose }: TripFormProps) {
               <option value="in_progress">実行中</option>
               <option value="completed">完了</option>
             </select>
+          </div>
+
+          {/* 場所の選択 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <MapPin size={16} className="inline mr-1" />
+              訪問場所
+            </label>
+            
+            {/* 場所追加セクション */}
+            <div className="mb-4">
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    addPlace(e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">場所を選択して追加...</option>
+                {places
+                  .filter(place => !selectedPlaces.includes(place.id))
+                  .map(place => (
+                    <option key={place.id} value={place.id}>
+                      {place.name} - {place.address}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            {/* 選択された場所一覧 */}
+            {selectedPlaces.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">
+                  訪問順序：{selectedPlaces.length}箇所選択済み
+                </p>
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-2">
+                  {selectedPlaces.map((placeId, index) => {
+                    const place = places.find(p => p.id === placeId);
+                    if (!place) return null;
+                    
+                    return (
+                      <div key={placeId} className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
+                        <div className="flex flex-col gap-1">
+                          <button
+                            type="button"
+                            onClick={() => movePlaceUp(index)}
+                            disabled={index === 0}
+                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                            aria-label="上に移動"
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => movePlaceDown(index)}
+                            disabled={index === selectedPlaces.length - 1}
+                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                            aria-label="下に移動"
+                          >
+                            ▼
+                          </button>
+                        </div>
+                        
+                        <GripVertical size={16} className="text-gray-400" />
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">
+                            {index + 1}. {place.name}
+                          </div>
+                          <div className="text-xs text-gray-500 truncate">
+                            {place.address}
+                          </div>
+                        </div>
+                        
+                        <button
+                          type="button"
+                          onClick={() => removePlace(placeId)}
+                          className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                          aria-label="削除"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {selectedPlaces.length === 0 && (
+              <p className="text-sm text-gray-500 italic">
+                まだ場所が選択されていません。上のドロップダウンから場所を追加してください。
+              </p>
+            )}
           </div>
 
           {/* メモ */}

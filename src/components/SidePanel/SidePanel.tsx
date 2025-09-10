@@ -1,6 +1,6 @@
 import { useStore } from '../../store/useStore';
 import type { Place, ViewMode, Trip } from '../../types/base';
-import { MapPin, Calendar, Settings, Menu, X, Clock } from 'lucide-react';
+import { MapPin, Calendar, Settings, Menu, X, Clock, Eye, EyeOff } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { PlaceList } from '../PlaceManagement/PlaceList';
 import { PlaceForm } from '../PlaceManagement/PlaceForm';
@@ -23,7 +23,18 @@ export function SidePanel({ className = '' }: SidePanelProps) {
   const [editingPlace, setEditingPlace] = useState<Place | undefined>();
   const [filteredPlaces, setFilteredPlaces] = useState<Place[]>(places);
   const [filteredTrips, setFilteredTrips] = useState<Trip[]>(trips);
+  const [showExhibitions, setShowExhibitions] = useState(() => {
+    const saved = localStorage.getItem('showExhibitions');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   
+  // 展示情報表示の切り替え
+  const toggleExhibitions = () => {
+    const newValue = !showExhibitions;
+    setShowExhibitions(newValue);
+    localStorage.setItem('showExhibitions', JSON.stringify(newValue));
+  };
+
   // 現在は基本的な検索UIのみ実装。将来的にはフィルタされた結果を各コンポーネントに渡す
   console.log('Filtered results:', { places: filteredPlaces.length, trips: filteredTrips.length });
 
@@ -84,12 +95,21 @@ export function SidePanel({ className = '' }: SidePanelProps) {
       <div className="p-4 border-b">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900">一人旅管理</h1>
-          <button
-            onClick={() => setIsCollapsed(true)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleExhibitions}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title={showExhibitions ? '展示情報を非表示' : '展示情報を表示'}
+            >
+              {showExhibitions ? <Eye size={16} /> : <EyeOff size={16} />}
+            </button>
+            <button
+              onClick={() => setIsCollapsed(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
         
         {/* View Mode Tabs - Mobile: Icons only, Desktop: With labels */}
@@ -180,7 +200,7 @@ export function SidePanel({ className = '' }: SidePanelProps) {
               )}
               
               {/* 展示・イベント情報（美術館・博物館の場合のみ） */}
-              {(selectedPlace.category === 'museum' || selectedPlace.category === 'gallery') && (
+              {showExhibitions && (selectedPlace.category === 'museum' || selectedPlace.category === 'gallery') && (
                 <div className="mt-4">
                   <ExhibitionInfo 
                     place={selectedPlace}
@@ -208,9 +228,11 @@ export function SidePanel({ className = '' }: SidePanelProps) {
               </span>
               
               {/* 旅行期間中の展示情報 */}
-              <div className="mt-4">
-                <TripExhibitionInfo trip={selectedTrip} />
-              </div>
+              {showExhibitions && (
+                <div className="mt-4">
+                  <TripExhibitionInfo trip={selectedTrip} />
+                </div>
+              )}
             </div>
           )}
         </div>

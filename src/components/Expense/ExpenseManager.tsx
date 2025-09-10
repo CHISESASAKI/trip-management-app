@@ -133,18 +133,10 @@ export function ExpenseManager({ trip }: ExpenseManagerProps) {
         <div className="bg-green-50 p-4 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="text-green-600" size={20} />
-            <span className="text-sm font-medium text-green-800">予算との差</span>
+            <span className="text-sm font-medium text-blue-800">総支出</span>
           </div>
-          <div className={`text-2xl font-bold ${
-            trip.budget && totalExpense > trip.budget 
-              ? 'text-red-600' 
-              : 'text-green-600'
-          }`}>
-            {trip.budget ? (
-              totalExpense > trip.budget 
-                ? `+¥${(totalExpense - trip.budget).toLocaleString()}`
-                : `¥${(trip.budget - totalExpense).toLocaleString()}`
-            ) : '予算未設定'}
+          <div className="text-2xl font-bold text-blue-600">
+            ¥{totalExpense.toLocaleString()}
           </div>
         </div>
 

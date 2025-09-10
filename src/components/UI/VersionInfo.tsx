@@ -8,9 +8,9 @@ interface VersionInfoProps {
 export function VersionInfo({ className = '' }: VersionInfoProps) {
   const [showDetail, setShowDetail] = useState(false);
   
-  const version = "v3.3.2";
+  const version = "v3.4.0";
   const buildDate = "2025-01-27";
-  const buildTime = "21:30:00";
+  const buildTime = "22:15:00";
 
   if (showDetail) {
     return (
@@ -44,10 +44,10 @@ export function VersionInfo({ className = '' }: VersionInfoProps) {
                 <span>更新内容:</span>
               </div>
               <div className="mt-1 text-xs text-gray-500">
-                • TypeScriptビルドエラー修正<br/>
-                • Firestore型定義の更新<br/>
-                • createdAt/updatedAt追加<br/>
-                • Firestoreインデックス作成完了
+                • 旅行計画に場所選択・順序機能追加<br/>
+                • 検索欄とサイドバーの重なり修正<br/>
+                • 展示情報の表示切替機能追加<br/>
+                • 不要なフィールド（予算・天気）削除
               </div>
             </div>
           </div>

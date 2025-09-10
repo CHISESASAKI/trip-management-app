@@ -23,10 +23,7 @@ export interface Trip {
   theme?: string;
   status: 'planned' | 'in_progress' | 'completed';
   places: string[]; // Place IDs
-  budget?: number;
-  actualCost?: number;
   notes?: string;
-  weather?: string;
   images?: string[]; // Image URLs or base64
   createdAt: string;
   updatedAt: string;
