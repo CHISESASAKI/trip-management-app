@@ -8,9 +8,9 @@ interface VersionInfoProps {
 export function VersionInfo({ className = '' }: VersionInfoProps) {
   const [showDetail, setShowDetail] = useState(false);
   
-  const version = "v3.3.1";
-  const buildDate = "2025-09-10";
-  const buildTime = "17:00:00";
+  const version = "v3.3.2";
+  const buildDate = "2025-01-27";
+  const buildTime = "21:30:00";
 
   if (showDetail) {
     return (
@@ -44,10 +44,10 @@ export function VersionInfo({ className = '' }: VersionInfoProps) {
                 <span>更新内容:</span>
               </div>
               <div className="mt-1 text-xs text-gray-500">
-                • Firestoreインデックスエラー修正<br/>
-                • 単純クエリ＋クライアントソート<br/>
-                • データベース接続安定化<br/>
-                • Firebase同期正常化
+                • TypeScriptビルドエラー修正<br/>
+                • Firestore型定義の更新<br/>
+                • createdAt/updatedAt追加<br/>
+                • Firestoreインデックス作成完了
               </div>
             </div>
           </div>
