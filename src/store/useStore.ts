@@ -103,7 +103,7 @@ const initialState: AppState = {
   currentUser: null,
   isOnline: typeof window !== 'undefined' ? navigator.onLine : true,
   syncStatus: 'offline',
-  useFirebase: false,
+  useFirebase: true,
   unsubscribeFunctions: []
 };
 
@@ -672,7 +672,7 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
       
       set({ 
         currentUser: null, 
-        useFirebase: false, 
+        useFirebase: true, 
         syncStatus: 'offline' 
       });
     } catch (error) {

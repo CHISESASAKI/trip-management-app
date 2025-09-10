@@ -8,9 +8,9 @@ interface VersionInfoProps {
 export function VersionInfo({ className = '' }: VersionInfoProps) {
   const [showDetail, setShowDetail] = useState(false);
   
-  const version = "v3.2.3";
+  const version = "v3.3.0";
   const buildDate = "2025-09-10";
-  const buildTime = "16:15:00";
+  const buildTime = "16:30:00";
 
   if (showDetail) {
     return (
@@ -44,10 +44,10 @@ export function VersionInfo({ className = '' }: VersionInfoProps) {
                 <span>更新内容:</span>
               </div>
               <div className="mt-1 text-xs text-gray-500">
-                • POI応答性向上(1s遅延)<br/>
-                • 移動検出速度向上(200ms)<br/>
-                • レート制限最適化(2s間隔)<br/>
-                • レスポンス・安定性バランス調整
+                • Firebase同期機能有効化<br/>
+                • 複数デバイス間データ共有<br/>
+                • 自動バックアップ対応<br/>
+                • クラウドストレージ連携
               </div>
             </div>
           </div>

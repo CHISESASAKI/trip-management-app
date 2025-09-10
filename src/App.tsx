@@ -13,10 +13,13 @@ function App() {
   const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
   const mapComponentRef = useRef<MapComponentRef>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const { loadData, places, trips } = useStore();
+  const { loadData, places, trips, initializeAuth } = useStore();
 
   useEffect(() => {
-    // データをロード（ローカルのみ）
+    // Firebase認証を初期化
+    initializeAuth();
+    
+    // データをロード（ローカル＋Firebase）
     loadData();
 
     // 初回訪問判定
@@ -42,7 +45,7 @@ function App() {
         }
       });
     }
-  }, [loadData, places.length, trips.length]);
+  }, [loadData, places.length, trips.length, initializeAuth]);
 
   // Sync map reference
   useEffect(() => {
